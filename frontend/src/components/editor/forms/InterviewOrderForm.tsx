@@ -84,7 +84,7 @@ export const InterviewOrderForm = ({ block }: InterviewOrderFormProps) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <label className="text-xs uppercase tracking-wide text-slate-400">Mandatory Order</label>
+        <label className="text-xs tracking-wide text-slate-400">Mandatory Order</label>
         <input type="checkbox" {...register('mandatory')} className="h-4 w-4 rounded border-outline/40 bg-panel" />
       </div>
 

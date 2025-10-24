@@ -61,7 +61,7 @@ function App() {
             <p className="text-xs text-slate-400">Craft interviews visually — synced to YAML.</p>
           </div>
           {isDirty && (
-            <span className="ml-4 text-[11px] uppercase tracking-wide text-amber-300">
+            <span className="ml-4 text-[11px] tracking-wide text-amber-300">
               Unsaved changes
             </span>
           )}

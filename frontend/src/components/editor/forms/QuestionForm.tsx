@@ -129,7 +129,7 @@ export const QuestionForm = ({ block }: QuestionFormProps) => {
   return (
     <div className="space-y-4">
       <div>
-        <label className="text-xs uppercase tracking-wide text-slate-400">Question Title</label>
+        <label className="text-xs tracking-wide text-slate-400">Question Title</label>
         <input
           {...register('question', { required: true })}
           className="mt-1 w-full rounded-lg border border-outline/30 bg-panel px-3 py-2 text-sm text-slate-100 focus:border-accent focus:outline-none"
@@ -138,7 +138,7 @@ export const QuestionForm = ({ block }: QuestionFormProps) => {
       </div>
 
       <div>
-        <label className="text-xs uppercase tracking-wide text-slate-400">Subquestion</label>
+        <label className="text-xs tracking-wide text-slate-400">Subquestion</label>
         <textarea
           {...register('subquestion')}
           rows={4}
@@ -185,14 +185,14 @@ export const QuestionForm = ({ block }: QuestionFormProps) => {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs uppercase tracking-wide text-slate-400">Label</label>
+                <label className="text-xs tracking-wide text-slate-400">Label</label>
                 <input
                   {...register(`fields.${index}.label` as const)}
                   className="mt-1 w-full rounded-md border border-outline/30 bg-panel px-3 py-2 text-sm text-slate-100"
                 />
               </div>
               <div>
-                <label className="text-xs uppercase tracking-wide text-slate-400">Variable</label>
+                <label className="text-xs tracking-wide text-slate-400">Variable</label>
                 <input
                   {...register(`fields.${index}.variable` as const)}
                   className="mt-1 w-full rounded-md border border-outline/30 bg-panel px-3 py-2 text-sm text-slate-100"
@@ -202,7 +202,7 @@ export const QuestionForm = ({ block }: QuestionFormProps) => {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs uppercase tracking-wide text-slate-400">Datatype</label>
+                <label className="text-xs tracking-wide text-slate-400">Datatype</label>
                 <select
                   {...register(`fields.${index}.datatype` as const)}
                   className="mt-1 w-full rounded-md border border-outline/30 bg-panel px-3 py-2 text-sm text-slate-100"
@@ -216,7 +216,7 @@ export const QuestionForm = ({ block }: QuestionFormProps) => {
                 </select>
               </div>
               <div>
-                <label className="text-xs uppercase tracking-wide text-slate-400">Hint</label>
+                <label className="text-xs tracking-wide text-slate-400">Hint</label>
                 <input
                   {...register(`fields.${index}.hint` as const)}
                   className="mt-1 w-full rounded-md border border-outline/30 bg-panel px-3 py-2 text-sm text-slate-100"
@@ -225,7 +225,7 @@ export const QuestionForm = ({ block }: QuestionFormProps) => {
             </div>
 
             <div>
-              <label className="text-xs uppercase tracking-wide text-slate-400">Choices</label>
+              <label className="text-xs tracking-wide text-slate-400">Choices</label>
               <input
                 {...register(`fields.${index}.choices` as const)}
                 className="mt-1 w-full rounded-md border border-outline/30 bg-panel px-3 py-2 text-sm text-slate-100"
@@ -238,7 +238,7 @@ export const QuestionForm = ({ block }: QuestionFormProps) => {
       </div>
 
       <div>
-        <label className="text-xs uppercase tracking-wide text-slate-400">Continue Button Variable</label>
+        <label className="text-xs tracking-wide text-slate-400">Continue Button Variable</label>
         <input
           {...register('continue button field')}
           className="mt-1 w-full rounded-md border border-outline/30 bg-panel px-3 py-2 text-sm text-slate-100"

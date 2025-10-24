@@ -23,7 +23,7 @@ type BlockStore = {
   setMode: (mode: BlockMode) => void;
   setVisualPanel: (panel: VisualPanel) => void;
   updateBlock: (blockId: string, updater: (block: Block) => Block) => void;
-  addNewBlock: (type: Block['type']) => void;
+  addNewBlock: (type: Block['type'], afterBlockId?: string) => void;
   deleteBlock: (blockId: string) => void;
   loadYaml: (yaml: string) => void;
   exportYaml: () => string;
@@ -56,21 +56,30 @@ export const useBlockStore = create<BlockStore>((set, get) => ({
         isDirty: true,
       };
     }),
-  addNewBlock: (type) =>
+  addNewBlock: (type, afterBlockId) =>
     set((state) => {
       const id = ensureUniqueId(state.blocks, type);
-      const base: Block = {
+      const newBlock: Block = {
         id,
         type,
         content: `${type}: placeholder`,
         language: type === 'code' || type === 'interview_order' ? 'python' : 'yaml',
         label: `${type[0].toUpperCase()}${type.slice(1)} block`,
-        position: state.blocks.length,
+        position: 0, // Position will be recalculated
       };
-      const blocks = addBlock(state.blocks, base);
+
+      const targetIndex = state.blocks.findIndex(({ id }) => id === afterBlockId);
+      const insertIndex = targetIndex === -1 ? state.blocks.length : targetIndex + 1;
+
+      const newBlocks = [
+        ...state.blocks.slice(0, insertIndex),
+        newBlock,
+        ...state.blocks.slice(insertIndex),
+      ].map((block, index) => ({ ...block, position: index })); // Recalculate positions
+
       return {
         ...state,
-        blocks,
+        blocks: newBlocks,
         selectedBlockId: id,
         isDirty: true,
       };

@@ -1,3 +1,4 @@
+import { YamlEditor } from './YamlEditor';
 import { useMemo } from 'react';
 import { ClipboardCheck, Play } from 'lucide-react';
 import { FlowCanvas } from './FlowCanvas';
@@ -15,7 +16,7 @@ export const RightPanel = () => {
       <section>
         <header className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-400">Flow</p>
+            <p className="text-xs tracking-wide text-slate-400">Flow</p>
             <h3 className="text-lg font-semibold text-slate-100">Interview Map</h3>
           </div>
           <button
@@ -33,7 +34,7 @@ export const RightPanel = () => {
         <header className="flex items-center gap-2 mb-3">
           <ClipboardCheck size={16} className="text-emerald-300" />
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-400">Validation</p>
+            <p className="text-xs tracking-wide text-slate-400">Validation</p>
             <h3 className="text-lg font-semibold text-slate-100">Schema Checks</h3>
           </div>
         </header>
@@ -46,7 +47,7 @@ export const RightPanel = () => {
           <ul className="space-y-2">
             {validationIssues.map((issue) => (
               <li key={`${issue.blockId}-${issue.message}`} className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-100">
-                <strong className="block text-xs uppercase tracking-wide">{issue.level}</strong>
+                <strong className="block text-xs tracking-wide">{issue.level}</strong>
                 {issue.message}
               </li>
             ))}
@@ -57,15 +58,11 @@ export const RightPanel = () => {
       <section>
         <header className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-400">Source</p>
+            <p className="text-xs tracking-wide text-slate-400">Source</p>
             <h3 className="text-lg font-semibold text-slate-100">Docassemble YAML</h3>
           </div>
         </header>
-        <textarea
-          className="w-full h-64 rounded-xl border border-outline/30 bg-panel/70 text-xs text-slate-200 font-mono leading-relaxed p-4"
-          value={yamlPreview}
-          readOnly
-        />
+        <YamlEditor value={yamlPreview} height="24rem" />
       </section>
     </aside>
   );

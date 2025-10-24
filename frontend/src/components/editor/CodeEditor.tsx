@@ -6,6 +6,7 @@ import { updateBlockContent } from '../../utils/yamlMapper';
 
 type CodeEditorProps = {
   block: Block;
+  height?: string | number;
 };
 
 const deriveCodeValue = (block: Block) => {
@@ -23,14 +24,14 @@ const deriveCodeValue = (block: Block) => {
   return block.content;
 };
 
-export const CodeEditor = ({ block }: CodeEditorProps) => {
+export const CodeEditor = ({ block, height = '100%' }: CodeEditorProps) => {
   const updateBlock = useBlockStore((state) => state.updateBlock);
   const value = useMemo(() => deriveCodeValue(block), [block]);
 
   return (
-    <div className="h-full rounded-xl overflow-hidden border border-outline/40 bg-panel/70">
+    <div className="rounded-xl overflow-hidden border border-outline/40 bg-panel/70">
       <Editor
-        height="100%"
+        height={height}
         value={value}
         defaultLanguage={block.language}
         theme="vs-dark"

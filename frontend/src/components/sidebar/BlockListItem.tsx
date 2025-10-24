@@ -1,6 +1,6 @@
-import { Fragment } from 'react';
-import { Trash2 } from 'lucide-react';
-import type { Block } from '../../types/blocks';
+import { Fragment, useState, useRef } from 'react';
+import { Plus, Trash2 } from 'lucide-react';
+import type { Block, BlockType } from '../../types/blocks';
 import { useBlockStore } from '../../store/useBlockStore';
 import { CodeEditor } from '../editor/CodeEditor';
 import { MetadataForm } from '../editor/forms/MetadataForm';
@@ -8,6 +8,16 @@ import { QuestionForm } from '../editor/forms/QuestionForm';
 import { InterviewOrderForm } from '../editor/forms/InterviewOrderForm';
 
 const VISUAL_BLOCK_TYPES: Block['type'][] = ['metadata', 'question', 'interview_order'];
+
+const BLOCK_PALETTE: { type: BlockType; label: string }[] = [
+  { type: 'metadata', label: 'Metadata' },
+  { type: 'objects', label: 'Objects' },
+  { type: 'question', label: 'Question' },
+  { type: 'code', label: 'Code' },
+  { type: 'attachment', label: 'Attachment' },
+  { type: 'event', label: 'Event' },
+  { type: 'interview_order', label: 'Interview Order' },
+];
 
 const blockBadge = (type: Block['type']) => {
   switch (type) {
@@ -53,15 +63,25 @@ const CodeBlockPreview = ({ content }: { content: string }) => {
 };
 
 export const BlockListItem = ({ block, isActive }: { block: Block; isActive: boolean }) => {
+  const [isAdding, setIsAdding] = useState(false);
+  const blockIdRef = useRef(block.id);
+  blockIdRef.current = block.id;
+
   const selectBlock = useBlockStore((state) => state.selectBlock);
   const deleteBlock = useBlockStore((state) => state.deleteBlock);
+  const addNewBlock = useBlockStore((state) => state.addNewBlock);
   const mode = useBlockStore((state) => state.mode);
 
   const supportsVisual = VISUAL_BLOCK_TYPES.includes(block.type);
   const effectiveMode = supportsVisual ? mode : 'code';
 
+  const handleAddBlock = (type: BlockType) => {
+    addNewBlock(type, blockIdRef.current);
+    setIsAdding(false);
+  };
+
   return (
-    <li className="border-b border-outline/20">
+    <li className="border-b border-outline/20 relative">
       <div
         role="button"
         tabIndex={0}
@@ -109,10 +129,42 @@ export const BlockListItem = ({ block, isActive }: { block: Block; isActive: boo
               )}
             </Fragment>
           ) : (
-            <div style={{ height: '24rem' }}>
-              <CodeEditor block={block} />
-            </div>
+            <CodeEditor block={block} height="24rem" />
           )}
+        </div>
+      )}
+      {isActive && (
+        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-20">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsAdding(true);
+            }}
+            className="p-1.5 rounded-full bg-accent text-accent-foreground shadow-lg hover:scale-110 transition-transform"
+          >
+            <Plus size={16} />
+          </button>
+        </div>
+      )}
+      {isAdding && (
+        <div className="absolute z-10 left-1/2 -translate-x-1/2 mt-2 w-72 bg-panel border border-outline/30 rounded-lg shadow-2xl">
+          <div className="p-2">
+            <p className="text-xs text-slate-400 px-2 mb-2">Select a block to add</p>
+            <div className="grid grid-cols-2 gap-1">
+              {BLOCK_PALETTE.map(({ type, label }) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => handleAddBlock(type)}
+                  className="text-left w-full px-3 py-2 text-sm font-medium text-slate-200 bg-panel border border-transparent rounded-lg hover:border-accent/80 hover:text-accent-foreground transition flex items-center gap-2"
+                >
+                  <Plus size={14} />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </li>

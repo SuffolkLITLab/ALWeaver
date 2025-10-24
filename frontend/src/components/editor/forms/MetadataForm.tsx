@@ -77,7 +77,7 @@ export const MetadataForm = ({ block }: MetadataFormProps) => {
   return (
     <form className="space-y-4">
       <div>
-        <label className="text-xs uppercase tracking-wide text-slate-400">Title</label>
+        <label className="text-xs tracking-wide text-slate-400">Title</label>
         <input
           {...register('title', { required: 'Title is required' })}
           className="mt-1 w-full rounded-lg border border-outline/30 bg-panel px-3 py-2 text-sm text-slate-100 focus:border-accent focus:outline-none"
@@ -87,7 +87,7 @@ export const MetadataForm = ({ block }: MetadataFormProps) => {
       </div>
 
       <div>
-        <label className="text-xs uppercase tracking-wide text-slate-400">Summary</label>
+        <label className="text-xs tracking-wide text-slate-400">Summary</label>
         <textarea
           {...register('summary')}
           rows={3}
@@ -98,14 +98,14 @@ export const MetadataForm = ({ block }: MetadataFormProps) => {
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs uppercase tracking-wide text-slate-400">Primary Language</label>
+          <label className="text-xs tracking-wide text-slate-400">Primary Language</label>
           <input
             {...register('language')}
             className="mt-1 w-full rounded-lg border border-outline/30 bg-panel px-3 py-2 text-sm text-slate-100 focus:border-accent focus:outline-none"
           />
         </div>
         <div>
-          <label className="text-xs uppercase tracking-wide text-slate-400">Author</label>
+          <label className="text-xs tracking-wide text-slate-400">Author</label>
           <input
             {...register('author')}
             className="mt-1 w-full rounded-lg border border-outline/30 bg-panel px-3 py-2 text-sm text-slate-100 focus:border-accent focus:outline-none"
@@ -114,12 +114,12 @@ export const MetadataForm = ({ block }: MetadataFormProps) => {
       </div>
 
       <div className="grid grid-cols-2 gap-3 items-center">
-        <label className="text-xs uppercase tracking-wide text-slate-400">Require Login</label>
+        <label className="text-xs tracking-wide text-slate-400">Require Login</label>
         <input type="checkbox" {...register('show login')} className="h-4 w-4 rounded border-outline/40 bg-panel" />
       </div>
 
       <div>
-        <label className="text-xs uppercase tracking-wide text-slate-400">Tags</label>
+        <label className="text-xs tracking-wide text-slate-400">Tags</label>
         <input
           {...register('tags')}
           className="mt-1 w-full rounded-lg border border-outline/30 bg-panel px-3 py-2 text-sm text-slate-100 focus:border-accent focus:outline-none"
