@@ -1,6 +1,6 @@
 import { MonitorCog, PanelsTopLeft, Save } from 'lucide-react';
 import { BlockSidebar } from './components/sidebar/BlockSidebar';
-import { EditorPane } from './components/editor/EditorPane';
+
 import { RightPanel } from './components/right-panel/RightPanel';
 import { useBlockStore } from './store/useBlockStore';
 import { useAutoValidation } from './hooks/useAutoValidation';
@@ -92,12 +92,9 @@ function App() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        <BlockSidebar />
-        <main className="flex-1 bg-canvas/40 px-6 py-6 overflow-y-auto">
-          <div className="max-w-4xl h-full mx-auto">
-            <EditorPane />
-          </div>
-        </main>
+        <div className="flex-1 overflow-y-auto">
+          <BlockSidebar />
+        </div>
         <RightPanel />
       </div>
 
