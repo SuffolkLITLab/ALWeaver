@@ -1,0 +1,2 @@
+[console_scripts]
+docassemble-editor-api = app.main:run

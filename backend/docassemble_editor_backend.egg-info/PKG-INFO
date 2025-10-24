@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: docassemble-editor-backend
+Version: 0.1.0
+Summary: API layer for the Docassemble visual interview builder
+Author: Code Lab
+Requires-Python: >=3.10
+Requires-Dist: fastapi>=0.115.0
+Requires-Dist: uvicorn[standard]>=0.30.0
+Requires-Dist: pydantic>=2.9.0
+Requires-Dist: ruamel.yaml>=0.18.10
+Requires-Dist: httpx>=0.27.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8.3.0; extra == "dev"
+Requires-Dist: httpx[http2]>=0.27.0; extra == "dev"

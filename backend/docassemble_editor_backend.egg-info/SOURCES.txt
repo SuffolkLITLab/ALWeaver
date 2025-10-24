@@ -1,0 +1,11 @@
+pyproject.toml
+app/__init__.py
+app/main.py
+app/schemas.py
+app/services/yaml_parser.py
+docassemble_editor_backend.egg-info/PKG-INFO
+docassemble_editor_backend.egg-info/SOURCES.txt
+docassemble_editor_backend.egg-info/dependency_links.txt
+docassemble_editor_backend.egg-info/entry_points.txt
+docassemble_editor_backend.egg-info/requires.txt
+docassemble_editor_backend.egg-info/top_level.txt
