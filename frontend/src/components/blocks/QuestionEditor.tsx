@@ -1,11 +1,26 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Plus, Trash2, GripVertical } from 'lucide-react';
 import { stringify } from 'yaml';
 import type { EditorBlock } from '@/state/types';
 import { useEditorStore } from '@/state/editorStore';
 import { FIELD_DATATYPE_OPTIONS } from '@/utils/constants';
 import { Button } from '../common/Button';
 import { RichTextEditor } from '../common/RichTextEditor';
+import {
+  DndContext,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface QuestionEditorProps {
   block: EditorBlock;
@@ -89,6 +104,7 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
   const [questionText, setQuestionText] = useState('');
   const [subquestionText, setSubquestionText] = useState('');
   const [fields, setFields] = useState<FieldState[]>([]);
+  const [mandatory, setMandatory] = useState(false);
 
   const fieldsRef = useRef<FieldState[]>(fields);
   useEffect(() => {
@@ -105,10 +121,24 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
 
     setFields(parsedFields);
     fieldsRef.current = parsedFields;
+
+    const rawMandatory = rawQuestionData.mandatory;
+    let nextMandatory = false;
+    if (typeof rawMandatory === 'string') {
+      nextMandatory = rawMandatory.toLowerCase() === 'true';
+    } else if (typeof rawMandatory === 'boolean') {
+      nextMandatory = rawMandatory;
+    }
+    setMandatory(nextMandatory);
   }, [rawQuestionData]);
 
   const persist = useCallback(
-    (nextQuestion: string, nextSubquestion: string, nextFields: FieldState[]) => {
+    (
+      nextQuestion: string,
+      nextSubquestion: string,
+      nextFields: FieldState[],
+      nextMandatory: boolean,
+    ) => {
       const base = { ...(block.metadata.rawData ?? {}) } as Record<string, unknown>;
       delete base.question;
       delete base.subquestion;
@@ -125,6 +155,12 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
         base.fields = nextFields.map((field, index) => buildFieldEntry(field, index));
       }
 
+      if (nextMandatory) {
+        base.mandatory = true;
+      } else {
+        delete base.mandatory;
+      }
+
       const yaml = stringify(base).trim();
       upsertBlockFromRaw(block.id, yaml);
     },
@@ -132,25 +168,31 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
   );
 
   const persistCurrent = useCallback(() => {
-    persist(questionText, subquestionText, fieldsRef.current);
-  }, [persist, questionText, subquestionText]);
+    persist(questionText, subquestionText, fieldsRef.current, mandatory);
+  }, [persist, questionText, subquestionText, mandatory]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 6 },
+    }),
+  );
 
   const handleQuestionBlur = useCallback(
     (value: string) => {
       const next = value ?? '';
       setQuestionText(next);
-      persist(next, subquestionText, fieldsRef.current);
+      persist(next, subquestionText, fieldsRef.current, mandatory);
     },
-    [persist, subquestionText],
+    [persist, subquestionText, mandatory],
   );
 
   const handleSubquestionBlur = useCallback(
     (value: string) => {
       const next = value ?? '';
       setSubquestionText(next);
-      persist(questionText, next, fieldsRef.current);
+      persist(questionText, next, fieldsRef.current, mandatory);
     },
-    [persist, questionText],
+    [persist, questionText, mandatory],
   );
 
   const handleFieldChange = (fieldId: string, updates: Partial<FieldState>) => {
@@ -195,7 +237,7 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
         };
       });
       fieldsRef.current = next;
-      persist(questionText, subquestionText, next);
+      persist(questionText, subquestionText, next, mandatory);
       return next;
     });
   };
@@ -204,7 +246,7 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
     setFields((prev) => {
       const next = prev.map((field) => (field.id === fieldId ? { ...field, required } : field));
       fieldsRef.current = next;
-      persist(questionText, subquestionText, next);
+      persist(questionText, subquestionText, next, mandatory);
       return next;
     });
   };
@@ -213,7 +255,7 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
     setFields((prev) => {
       const next = prev.filter((field) => field.id !== fieldId);
       fieldsRef.current = next;
-      persist(questionText, subquestionText, next);
+      persist(questionText, subquestionText, next, mandatory);
       return next;
     });
   };
@@ -227,7 +269,7 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
           label: `Field ${prev.length + 1}`,
           variable: '',
           datatype: 'text',
-          required: false,
+          required: true,
           optionStrategy: 'none',
           options: [],
           code: '',
@@ -235,9 +277,31 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
         },
       ];
       fieldsRef.current = next;
-      persist(questionText, subquestionText, next);
+      persist(questionText, subquestionText, next, mandatory);
       return next;
     });
+  };
+
+  const handleReorderFields = (originId: string, targetId: string) => {
+    setFields((prev) => {
+      const oldIndex = prev.findIndex((field) => field.id === originId);
+      const newIndex = prev.findIndex((field) => field.id === targetId);
+      if (oldIndex === -1 || newIndex === -1) {
+        return prev;
+      }
+      const next = arrayMove(prev, oldIndex, newIndex);
+      fieldsRef.current = next;
+      persist(questionText, subquestionText, next, mandatory);
+      return next;
+    });
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) {
+      return;
+    }
+    handleReorderFields(String(active.id), String(over.id));
   };
 
   const handleOptionStrategyChange = (fieldId: string, strategy: FieldOptionStrategy) => {
@@ -291,7 +355,7 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
         };
       });
       fieldsRef.current = next;
-      persist(questionText, subquestionText, next);
+      persist(questionText, subquestionText, next, mandatory);
       return next;
     });
   };
@@ -357,7 +421,7 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
         };
       });
       fieldsRef.current = next;
-      persist(questionText, subquestionText, next);
+      persist(questionText, subquestionText, next, mandatory);
       return next;
     });
   };
@@ -374,7 +438,7 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
         };
       });
       fieldsRef.current = next;
-      persist(questionText, subquestionText, next);
+      persist(questionText, subquestionText, next, mandatory);
       return next;
     });
   };
@@ -391,6 +455,11 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
     persistCurrent();
   };
 
+  const handleToggleMandatory = (value: boolean) => {
+    setMandatory(value);
+    persist(questionText, subquestionText, fieldsRef.current, value);
+  };
+
   return (
     <div className="space-y-5">
       <section className="space-y-2">
@@ -402,7 +471,7 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
           onChange={setQuestionText}
           onBlur={handleQuestionBlur}
           placeholder="Enter the prompt shown to users"
-          className="min-h-[75px]"
+          className="min-h-[180px]"
         />
       </section>
 
@@ -419,6 +488,18 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
         />
       </section>
 
+      <div className="flex items-center justify-end">
+        <Button
+          type="button"
+          variant={mandatory ? 'primary' : 'ghost'}
+          size="sm"
+          onClick={() => handleToggleMandatory(!mandatory)}
+          aria-pressed={mandatory}
+        >
+          {mandatory ? 'Mandatory: On' : 'Mandatory: Off'}
+        </Button>
+      </div>
+
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-text-primary">Fields</h3>
@@ -431,192 +512,320 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
           {fields.length === 0 ? (
             <p className="text-sm text-text-muted">No fields yet. Add inputs to collect data from the user.</p>
           ) : (
-            fields.map((field, index) => (
-              <div key={field.id} className="rounded-2xl border border-border bg-surface px-4 py-4 shadow-soft">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
-                      Field {index + 1}
-                    </p>
-                    <div className="mt-2 grid gap-3 md:grid-cols-2">
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-text-muted" htmlFor={`${field.id}-label`}>
-                          Label
-                        </label>
-                        <input
-                          id={`${field.id}-label`}
-                          value={field.label}
-                          onChange={(event) => handleFieldChange(field.id, { label: event.target.value })}
-                          onBlur={handleFieldBlur}
-                          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-text-primary outline-none focus:border-primary"
-                          placeholder="e.g. Full name"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-text-muted" htmlFor={`${field.id}-variable`}>
-                          Variable
-                        </label>
-                        <input
-                          id={`${field.id}-variable`}
-                          value={field.variable}
-                          onChange={(event) => handleFieldChange(field.id, { variable: event.target.value })}
-                          onBlur={handleFieldBlur}
-                          className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm text-text-primary outline-none focus:border-primary"
-                          placeholder="users[0].name.full"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveField(field.id)}
-                    className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-muted hover:text-danger"
-                    aria-label="Remove field"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-
-                <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-text-muted" htmlFor={`${field.id}-datatype`}>
-                      Datatype
-                    </label>
-                    <select
-                      id={`${field.id}-datatype`}
-                      value={field.datatype}
-                      onChange={(event) => handleFieldDatatypeChange(field.id, event.target.value)}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-text-primary outline-none focus:border-primary"
-                    >
-                      {FIELD_DATATYPE_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <label className="mt-6 flex items-center gap-2 text-xs font-medium text-text-muted">
-                    <input
-                      type="checkbox"
-                      checked={field.required}
-                      onChange={(event) => handleToggleRequired(field.id, event.target.checked)}
-                      className="h-4 w-4"
-                    />
-                    Required
-                  </label>
-                </div>
-
-                {isChoiceDatatype(field.datatype) && (
-                  <div className="mt-4 rounded-xl border border-dashed border-border bg-background/60 p-4">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
-                        Options
-                      </h4>
-                      <select
-                        value={field.optionStrategy === 'none' ? 'text' : field.optionStrategy}
-                        onChange={(event) => handleOptionStrategyChange(field.id, event.target.value as FieldOptionStrategy)}
-                        className="h-9 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium uppercase tracking-widest text-text-muted"
-                      >
-                        {OPTION_STRATEGY_LABELS.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                      {(field.optionStrategy === 'text' || field.optionStrategy === 'label') && (
-                        <Button type="button" variant="ghost" size="sm" onClick={() => handleAddOption(field.id)} leftIcon={<Plus className="h-3.5 w-3.5" />}>
-                          Add option
-                        </Button>
-                      )}
-                    </div>
-
-                    {field.optionStrategy === 'code' ? (
-                      <div className="mt-3 space-y-1">
-                        <label className="text-xs font-medium text-text-muted" htmlFor={`${field.id}-code`}>
-                          Python expression
-                        </label>
-                        <textarea
-                          id={`${field.id}-code`}
-                          value={field.code}
-                          onChange={(event) => handleCodeChange(field.id, event.target.value)}
-                          onBlur={handleCodeBlur}
-                          rows={4}
-                          className="w-full rounded-lg border border-border bg-surface px-3 py-2 font-mono text-xs text-text-primary outline-none focus:border-primary"
-                          placeholder={DEFAULT_CODE_EXPRESSION}
-                        />
-                      </div>
-                    ) : null}
-
-                    {field.optionStrategy === 'text' && (
-                      <div className="mt-3 space-y-2">
-                        {field.options.length === 0 ? (
-                          <p className="text-xs text-text-muted">No options yet. Add a response choice.</p>
-                        ) : (
-                          field.options.map((option, optionIndex) => (
-                            <div key={option.id} className="flex items-center gap-2">
-                              <input
-                                value={option.label}
-                                onChange={(event) => handleOptionLabelChange(field.id, option.id, event.target.value)}
-                                onBlur={handleOptionBlur}
-                                className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none focus:border-primary"
-                                placeholder={`Option ${optionIndex + 1}`}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveOption(field.id, option.id)}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-text-muted hover:bg-muted hover:text-danger"
-                                aria-label="Remove option"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                          ))
-                        )}
-                      </div>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={fields.map((field) => field.id)} strategy={verticalListSortingStrategy}>
+                {fields.map((field, index) => (
+                  <SortableField key={field.id} id={field.id}>
+                    {(drag) => (
+                      <FieldCard
+                        index={index}
+                        field={field}
+                        dragHandle={drag}
+                        onFieldChange={handleFieldChange}
+                        onFieldBlur={handleFieldBlur}
+                        onRemove={handleRemoveField}
+                        onDatatypeChange={handleFieldDatatypeChange}
+                        onToggleRequired={handleToggleRequired}
+                        onStrategyChange={handleOptionStrategyChange}
+                        onAddOption={handleAddOption}
+                        onRemoveOption={handleRemoveOption}
+                        onOptionLabelChange={handleOptionLabelChange}
+                        onOptionValueChange={handleOptionValueChange}
+                        onOptionBlur={handleOptionBlur}
+                        onCodeChange={handleCodeChange}
+                        onCodeBlur={handleCodeBlur}
+                      />
                     )}
+                  </SortableField>
+                ))}
+              </SortableContext>
+            </DndContext>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
 
-                    {field.optionStrategy === 'label' && (
-                      <div className="mt-3 space-y-2">
-                        {field.options.length === 0 ? (
-                          <p className="text-xs text-text-muted">No options yet. Add a label → value pair.</p>
-                        ) : (
-                          field.options.map((option, optionIndex) => (
-                            <div key={option.id} className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
-                              <input
-                                value={option.label}
-                                onChange={(event) => handleOptionLabelChange(field.id, option.id, event.target.value)}
-                                onBlur={handleOptionBlur}
-                                className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none focus:border-primary"
-                                placeholder={`Label ${optionIndex + 1}`}
-                              />
-                              <input
-                                value={option.value}
-                                onChange={(event) => handleOptionValueChange(field.id, option.id, event.target.value)}
-                                onBlur={handleOptionBlur}
-                                className="rounded-lg border border-border bg-surface px-3 py-2 text-sm font-mono text-text-primary outline-none focus:border-primary"
-                                placeholder={`value_${optionIndex + 1}`}
-                              />
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveOption(field.id, option.id)}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-text-muted hover:bg-muted hover:text-danger"
-                                aria-label="Remove option"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </div>
+interface DragHandleBindings {
+  attributes: Record<string, unknown>;
+  listeners: Record<string, unknown> | undefined;
+  setActivatorNodeRef: (element: HTMLElement | null) => void;
+  isDragging: boolean;
+}
+
+interface SortableFieldProps {
+  id: string;
+  children: (drag: DragHandleBindings) => ReactNode;
+}
+
+function SortableField({ id, children }: SortableFieldProps): JSX.Element {
+  const { setNodeRef, attributes, listeners, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.92 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="touch-manipulation">
+      {children({ attributes, listeners, setActivatorNodeRef, isDragging })}
+    </div>
+  );
+}
+
+interface FieldCardProps {
+  index: number;
+  field: FieldState;
+  dragHandle: DragHandleBindings;
+  onFieldChange: (fieldId: string, updates: Partial<FieldState>) => void;
+  onFieldBlur: () => void;
+  onRemove: (fieldId: string) => void;
+  onDatatypeChange: (fieldId: string, datatype: string) => void;
+  onToggleRequired: (fieldId: string, required: boolean) => void;
+  onStrategyChange: (fieldId: string, strategy: FieldOptionStrategy) => void;
+  onAddOption: (fieldId: string) => void;
+  onRemoveOption: (fieldId: string, optionId: string) => void;
+  onOptionLabelChange: (fieldId: string, optionId: string, label: string) => void;
+  onOptionValueChange: (fieldId: string, optionId: string, value: string) => void;
+  onOptionBlur: () => void;
+  onCodeChange: (fieldId: string, code: string) => void;
+  onCodeBlur: () => void;
+}
+
+function FieldCard({
+  index,
+  field,
+  dragHandle,
+  onFieldChange,
+  onFieldBlur,
+  onRemove,
+  onDatatypeChange,
+  onToggleRequired,
+  onStrategyChange,
+  onAddOption,
+  onRemoveOption,
+  onOptionLabelChange,
+  onOptionValueChange,
+  onOptionBlur,
+  onCodeChange,
+  onCodeBlur,
+}: FieldCardProps): JSX.Element {
+  const { attributes, listeners, setActivatorNodeRef, isDragging } = dragHandle;
+  return (
+    <div className="rounded-2xl border border-border bg-surface px-4 py-4 shadow-soft">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <button
+            type="button"
+            ref={(node) => setActivatorNodeRef(node)}
+            className={`mt-6 hidden h-8 w-8 items-center justify-center rounded-full border border-border bg-muted text-text-muted transition-colors hover:bg-primary/10 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary md:flex ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+            aria-label="Reorder field"
+            {...(attributes as Record<string, unknown>)}
+            {...((listeners ?? {}) as Record<string, unknown>)}
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
+              Field {index + 1}
+            </p>
+            <div className="mt-2 grid gap-3 md:grid-cols-2">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-text-muted" htmlFor={`${field.id}-label`}>
+                  Label
+                </label>
+                <input
+                  id={`${field.id}-label`}
+                  value={field.label}
+                  onChange={(event) => onFieldChange(field.id, { label: event.target.value })}
+                  onBlur={onFieldBlur}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-text-primary outline-none focus:border-primary"
+                  placeholder="e.g. Full name"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-text-muted" htmlFor={`${field.id}-variable`}>
+                  Variable
+                </label>
+                <input
+                  id={`${field.id}-variable`}
+                  value={field.variable}
+                  onChange={(event) => onFieldChange(field.id, { variable: event.target.value })}
+                  onBlur={onFieldBlur}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm text-text-primary outline-none focus:border-primary"
+                  placeholder="users[0].name.full"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => onRemove(field.id)}
+          className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-muted hover:text-danger"
+          aria-label="Remove field"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-text-muted" htmlFor={`${field.id}-datatype`}>
+            Datatype
+          </label>
+          <select
+            id={`${field.id}-datatype`}
+            value={field.datatype}
+            onChange={(event) => onDatatypeChange(field.id, event.target.value)}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-text-primary outline-none focus:border-primary"
+          >
+            {FIELD_DATATYPE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <label className="mt-6 flex items-center gap-2 text-xs font-medium text-text-muted">
+          <input
+            type="checkbox"
+            checked={field.required !== false}
+            onChange={(event) => onToggleRequired(field.id, event.target.checked)}
+            className="h-4 w-4"
+          />
+          Required
+        </label>
+      </div>
+
+      {isChoiceDatatype(field.datatype) && (
+        <ChoiceEditor
+          field={field}
+          onStrategyChange={onStrategyChange}
+          onAddOption={onAddOption}
+          onRemoveOption={onRemoveOption}
+          onOptionLabelChange={onOptionLabelChange}
+          onOptionValueChange={onOptionValueChange}
+          onOptionBlur={onOptionBlur}
+          onCodeChange={onCodeChange}
+          onCodeBlur={onCodeBlur}
+        />
+      )}
+    </div>
+  );
+}
+
+interface ChoiceEditorProps {
+  field: FieldState;
+  onStrategyChange: (fieldId: string, strategy: FieldOptionStrategy) => void;
+  onAddOption: (fieldId: string) => void;
+  onRemoveOption: (fieldId: string, optionId: string) => void;
+  onOptionLabelChange: (fieldId: string, optionId: string, label: string) => void;
+  onOptionValueChange: (fieldId: string, optionId: string, value: string) => void;
+  onOptionBlur: () => void;
+  onCodeChange: (fieldId: string, code: string) => void;
+  onCodeBlur: () => void;
+}
+
+function ChoiceEditor({
+  field,
+  onStrategyChange,
+  onAddOption,
+  onRemoveOption,
+  onOptionLabelChange,
+  onOptionValueChange,
+  onOptionBlur,
+  onCodeChange,
+  onCodeBlur,
+}: ChoiceEditorProps): JSX.Element {
+  return (
+    <div className="mt-4 rounded-xl border border-dashed border-border bg-background/60 p-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Options</h4>
+        <select
+          value={field.optionStrategy === 'none' ? 'text' : field.optionStrategy}
+          onChange={(event) => onStrategyChange(field.id, event.target.value as FieldOptionStrategy)}
+          className="h-9 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium uppercase tracking-widest text-text-muted"
+        >
+          {OPTION_STRATEGY_LABELS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        {(field.optionStrategy === 'text' || field.optionStrategy === 'label' || field.optionStrategy === 'none') && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onAddOption(field.id)}
+            leftIcon={<Plus className="h-3.5 w-3.5" />}
+          >
+            Add option
+          </Button>
+        )}
+      </div>
+
+      {field.optionStrategy === 'code' ? (
+        <div className="mt-3 space-y-1">
+          <label className="text-xs font-medium text-text-muted" htmlFor={`${field.id}-code`}>
+            Python expression
+          </label>
+          <textarea
+            id={`${field.id}-code`}
+            value={field.code}
+            onChange={(event) => onCodeChange(field.id, event.target.value)}
+            onBlur={onCodeBlur}
+            rows={4}
+            className="w-full rounded-lg border border-border bg-surface px-3 py-2 font-mono text-xs text-text-primary outline-none focus:border-primary"
+            placeholder={DEFAULT_CODE_EXPRESSION}
+          />
+        </div>
+      ) : (
+        <div className="mt-3 space-y-2">
+          {field.options.length === 0 ? (
+            <p className="text-xs text-text-muted">No options yet. Add a response choice.</p>
+          ) : (
+            field.options.map((option, optionIndex) => (
+              <div
+                key={option.id}
+                className={
+                  field.optionStrategy === 'label'
+                    ? 'grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]'
+                    : 'flex items-center gap-2'
+                }
+              >
+                <input
+                  value={option.label}
+                  onChange={(event) => onOptionLabelChange(field.id, option.id, event.target.value)}
+                  onBlur={onOptionBlur}
+                  className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-primary outline-none focus:border-primary"
+                  placeholder={`Option ${optionIndex + 1}`}
+                />
+                {field.optionStrategy === 'label' && (
+                  <input
+                    value={option.value}
+                    onChange={(event) => onOptionValueChange(field.id, option.id, event.target.value)}
+                    onBlur={onOptionBlur}
+                    className="rounded-lg border border-border bg-surface px-3 py-2 text-sm font-mono text-text-primary outline-none focus:border-primary"
+                    placeholder={`value_${optionIndex + 1}`}
+                  />
                 )}
+                <button
+                  type="button"
+                  onClick={() => onRemoveOption(field.id, option.id)}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full text-text-muted hover:bg-muted hover:text-danger"
+                  aria-label="Remove option"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
             ))
           )}
         </div>
-      </section>
+      )}
     </div>
   );
 }
@@ -628,7 +837,7 @@ function parseField(entry: unknown, index: number): FieldState {
       label: `Field ${index + 1}`,
       variable: '',
       datatype: 'text',
-      required: false,
+      required: true,
       optionStrategy: 'none',
       options: [],
       code: '',
@@ -660,7 +869,15 @@ function parseField(entry: unknown, index: number): FieldState {
   const datatype = typeof record.datatype === 'string' ? record.datatype : 'text';
   delete extras.datatype;
 
-  const required = Boolean(record.required);
+  let required = true;
+  if (Object.prototype.hasOwnProperty.call(record, 'required')) {
+    const rawRequired = record.required;
+    if (typeof rawRequired === 'string') {
+      required = rawRequired.toLowerCase() !== 'false';
+    } else {
+      required = rawRequired !== false;
+    }
+  }
   delete extras.required;
 
   let optionStrategy: FieldOptionStrategy = 'none';
@@ -755,8 +972,8 @@ function buildFieldEntry(field: FieldState, index: number): Record<string, unkno
     entry.datatype = field.datatype;
   }
 
-  if (field.required) {
-    entry.required = true;
+  if (field.required === false) {
+    entry.required = false;
   }
 
   if (field.optionStrategy === 'code') {

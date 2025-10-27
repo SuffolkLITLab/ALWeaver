@@ -195,17 +195,19 @@ function parseQuestionPreview(block: Record<string, unknown>): QuestionPreview |
             : '';
     }
 
+    let required = true;
+    if (typeof record.required === 'boolean') {
+      required = record.required;
+    } else if (typeof record.required === 'string') {
+      required = record.required.toLowerCase() !== 'false';
+    }
+
     return {
       id: `field-${index}`,
       label,
       variable,
       datatype: typeof record.datatype === 'string' ? record.datatype : undefined,
-      required:
-        typeof record.required === 'boolean'
-          ? record.required
-          : typeof record.required === 'string'
-            ? record.required.toLowerCase() === 'true'
-            : undefined,
+      required,
     };
   });
 
@@ -234,13 +236,21 @@ function parseBlock(raw: string, position: number): EditorBlock {
   const language = LANGUAGE_MAP[type] ?? 'yaml';
 
   const orderItems = type === 'interview_order' ? extractOrderItems(blockRecord) : [];
-  const isMandatory =
-    type === 'interview_order' &&
-    !!(
+  let isMandatory = false;
+  if (type === 'interview_order') {
+    isMandatory = !!(
       blockRecord.interview_order &&
       typeof blockRecord.interview_order === 'object' &&
       (blockRecord.interview_order as Record<string, unknown>).mandatory
     );
+  } else if (blockRecord.mandatory !== undefined) {
+    const mandatoryValue = blockRecord.mandatory;
+    if (typeof mandatoryValue === 'string') {
+      isMandatory = mandatoryValue.toLowerCase() === 'true';
+    } else if (typeof mandatoryValue === 'boolean') {
+      isMandatory = mandatoryValue;
+    }
+  }
 
   const metadata = {
     isMandatory,
