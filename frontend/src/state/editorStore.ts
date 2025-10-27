@@ -2,9 +2,11 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { BlockSummary, BlockType } from '@/api/types';
 import type { EditorStore, EditorBlock, BlockViewMode } from './types';
-import { buildYamlDocument, parseBlockFromRaw, parseBlocksFromYaml } from '@/utils/yaml';
+import { buildYamlDocument, parseBlockFromRaw, parseBlocksFromYaml, serializeBlock } from '@/utils/yaml';
+import { createBlockTemplate } from '@/utils/blockTemplates';
 
 const DEFAULT_BLOCK_VIEW: BlockViewMode = 'preview';
+const DEFAULT_DOCUMENT_NAME = 'untitled.yml';
 
 const deriveSidebarPanel = (block?: EditorBlock): EditorStore['sidebar']['activePanel'] => {
   if (!block) {
@@ -42,8 +44,10 @@ export const useEditorStore = create<EditorStore>()(
       issues: [],
     },
     summaries: {},
+    activeView: 'visual',
+    documentName: DEFAULT_DOCUMENT_NAME,
 
-    initializeFromYaml: (yaml) => {
+    initializeFromYaml: (yaml, options) => {
       const blocks = parseBlocksFromYaml(yaml);
       set((state) => {
         state.yamlDocument = yaml;
@@ -63,6 +67,7 @@ export const useEditorStore = create<EditorStore>()(
           issues: [],
         };
         state.summaries = {};
+        state.documentName = options?.documentName ?? state.documentName ?? DEFAULT_DOCUMENT_NAME;
       });
     },
 
@@ -238,6 +243,52 @@ export const useEditorStore = create<EditorStore>()(
 
           return updated;
         });
+      });
+    },
+    setActiveView: (view) => {
+      set((state) => {
+        state.activeView = view;
+        if (view !== 'visual') {
+          state.sidebar.isOpen = false;
+        }
+      });
+    },
+    setDocumentName: (name) => {
+      set((state) => {
+        state.documentName = name || DEFAULT_DOCUMENT_NAME;
+      });
+    },
+    addBlockAfter: (blockId, type) => {
+      set((state) => {
+        const template = createBlockTemplate(type);
+        const serializedBlocks = state.blocks.map((block) => serializeBlock(block));
+        const insertIndex = blockId ? state.blocks.findIndex((block) => block.id === blockId) : -1;
+
+        if (insertIndex === -1 && blockId) {
+          return;
+        }
+
+        serializedBlocks.splice(insertIndex + 1, 0, template);
+
+        const nextYaml = serializedBlocks.join('\n\n---\n\n');
+        const nextBlocks = parseBlocksFromYaml(nextYaml);
+
+        const nextModes: Record<string, BlockViewMode> = {};
+        nextBlocks.forEach((block) => {
+          nextModes[block.id] = state.blockViewMode[block.id] ?? DEFAULT_BLOCK_VIEW;
+        });
+
+        state.yamlDocument = nextYaml;
+        state.blocks = nextBlocks;
+        state.blockViewMode = nextModes;
+        state.summaries = {};
+
+        const createdBlock = nextBlocks[insertIndex + 1];
+        if (createdBlock) {
+          state.selectedBlockId = createdBlock.id;
+          state.sidebar.activePanel = deriveSidebarPanel(createdBlock);
+          state.sidebar.isOpen = true;
+        }
       });
     },
   })),

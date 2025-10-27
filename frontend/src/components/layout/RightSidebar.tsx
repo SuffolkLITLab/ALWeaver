@@ -18,11 +18,16 @@ const PANEL_TITLES: Record<SidebarPanel, string> = {
 };
 
 export function RightSidebar(): JSX.Element {
+  const activeView = useEditorStore((state) => state.activeView);
   const sidebar = useEditorStore((state) => state.sidebar);
   const setSidebarState = useEditorStore((state) => state.setSidebarState);
   const selectedBlock = useEditorStore((state) =>
     state.blocks.find((block) => block.id === state.selectedBlockId),
   );
+
+  if (activeView !== 'visual') {
+    return null;
+  }
 
   const isOpen = sidebar.isOpen || sidebar.pinned;
 

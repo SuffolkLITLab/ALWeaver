@@ -31,6 +31,7 @@ const FIELD_RESERVED_KEYS = new Set([
   'datatype',
   'input type',
   'choices',
+  'code',
   'hint',
   'css class',
   'max',

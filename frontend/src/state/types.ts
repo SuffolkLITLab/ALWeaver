@@ -1,5 +1,7 @@
 import type { BlockLanguage, BlockSummary, BlockType, ValidationIssue } from '@/api/types';
 
+export type EditorActiveView = 'visual' | 'yaml';
+
 export interface QuestionFieldPreview {
   id: string;
   label: string;
@@ -64,10 +66,12 @@ export interface EditorStoreState {
   sidebar: SidebarState;
   validation: ValidationState;
   summaries: Record<string, BlockSummary>;
+  activeView: EditorActiveView;
+  documentName: string;
 }
 
 export interface EditorStoreActions {
-  initializeFromYaml: (yaml: string) => void;
+  initializeFromYaml: (yaml: string, options?: { documentName?: string }) => void;
   setBlocks: (blocks: EditorBlock[]) => void;
   selectBlock: (blockId?: string) => void;
   toggleBlockView: (blockId: string, mode?: BlockViewMode) => void;
@@ -80,6 +84,9 @@ export interface EditorStoreActions {
   setBlockMetadata: (blockId: string, metadata: Partial<BlockMetadata>) => void;
   upsertBlockFromRaw: (blockId: string, raw: string) => void;
   setServerSummaries: (summaries: BlockSummary[]) => void;
+  setActiveView: (view: EditorActiveView) => void;
+  setDocumentName: (name: string) => void;
+  addBlockAfter: (blockId: string | undefined, type: BlockType) => void;
 }
 
 export type EditorStore = EditorStoreState & EditorStoreActions;

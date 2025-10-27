@@ -34,3 +34,33 @@ body {
   background-color: theme('colors.border');
   border-radius: 9999px;
 }
+
+.tiptap {
+  min-height: 60px;
+  line-height: 1.6;
+}
+
+.tiptap p {
+  margin: 0 0 0.75rem;
+}
+
+.tiptap ul,
+.tiptap ol {
+  margin: 0 0 0.75rem 1.25rem;
+  padding: 0;
+}
+
+.tiptap ul {
+  list-style-type: disc;
+}
+
+.tiptap ol {
+  list-style-type: decimal;
+}
+
+.tiptap blockquote {
+  border-left: 3px solid theme('colors.border');
+  margin: 0 0 0.75rem;
+  padding-left: 0.75rem;
+  color: theme('colors.text-muted');
+}

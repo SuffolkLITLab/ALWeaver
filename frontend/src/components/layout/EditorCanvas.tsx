@@ -1,23 +1,12 @@
-import { useMemo, useRef } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
+import { useMemo } from 'react';
 import { useFilteredBlocks } from '@/hooks/useFilteredBlocks';
 import { useEditorStore } from '@/state/editorStore';
 import { BlockCard } from '../blocks/BlockCard';
+import { AddBlockTrigger } from '../blocks/AddBlockTrigger';
 
 export function EditorCanvas(): JSX.Element {
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const blocks = useFilteredBlocks();
   const selectedBlockId = useEditorStore((state) => state.selectedBlockId);
-
-  const rowVirtualizer = useVirtualizer({
-    count: blocks.length,
-    getScrollElement: () => containerRef.current,
-    estimateSize: () => 340,
-    overscan: 6,
-  });
-
-  const virtualItems = rowVirtualizer.getVirtualItems();
-  const paddingStart = virtualItems[0]?.start ?? 0;
 
   const emptyState = useMemo(
     () => (
@@ -30,26 +19,18 @@ export function EditorCanvas(): JSX.Element {
   );
 
   return (
-    <section ref={containerRef} className="flex-1 overflow-y-auto bg-transparent px-6 py-6 scrollbar-thin">
-      {blocks.length === 0 ? (
-        emptyState
-      ) : (
-        <div className="relative" style={{ height: rowVirtualizer.getTotalSize(), width: '100%' }}>
-          <div style={{ transform: `translateY(${paddingStart}px)` }} className="absolute left-0 top-0 w-full space-y-4">
-            {virtualItems.map((virtualRow) => {
-              const block = blocks[virtualRow.index];
-              return (
-                <BlockCard
-                  key={block.id}
-                  block={block}
-                  isSelected={selectedBlockId === block.id}
-                  virtualHeight={virtualRow.size}
-                />
-              );
-            })}
-          </div>
-        </div>
-      )}
+    <section className="flex-1 overflow-y-auto bg-transparent px-6 py-6 scrollbar-thin">
+      <div className="mx-auto flex max-w-5xl flex-col gap-4">
+        <AddBlockTrigger compact insertAfterId={undefined} />
+        {blocks.length === 0
+          ? emptyState
+          : blocks.map((block, index) => (
+              <div key={block.id} className="group">
+                <BlockCard block={block} isSelected={selectedBlockId === block.id} />
+                <AddBlockTrigger insertAfterId={block.id} compact={index === blocks.length - 1} />
+              </div>
+            ))}
+      </div>
     </section>
   );
 }

@@ -16,7 +16,7 @@ export default function App(): JSX.Element {
 
   useEffect(() => {
     if (!initializedRef.current) {
-      initializeFromYaml(SAMPLE_INTERVIEW);
+      initializeFromYaml(SAMPLE_INTERVIEW, { documentName: 'city_council_interview.yml' });
       initializedRef.current = true;
     }
   }, [initializeFromYaml]);
