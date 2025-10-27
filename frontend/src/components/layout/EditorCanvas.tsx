@@ -1,12 +1,24 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useFilteredBlocks } from '@/hooks/useFilteredBlocks';
 import { useEditorStore } from '@/state/editorStore';
 import { BlockCard } from '../blocks/BlockCard';
 import { AddBlockTrigger } from '../blocks/AddBlockTrigger';
 
 export function EditorCanvas(): JSX.Element {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const blocks = useFilteredBlocks();
   const selectedBlockId = useEditorStore((state) => state.selectedBlockId);
+
+  useEffect(() => {
+    if (!selectedBlockId || !containerRef.current) {
+      return;
+    }
+    const element = containerRef.current.querySelector<HTMLDivElement>(`[data-block-id="${selectedBlockId}"]`);
+    if (!element) {
+      return;
+    }
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [selectedBlockId]);
 
   const emptyState = useMemo(
     () => (
@@ -19,13 +31,13 @@ export function EditorCanvas(): JSX.Element {
   );
 
   return (
-    <section className="flex-1 overflow-y-auto bg-transparent px-6 py-6 scrollbar-thin">
+    <section ref={containerRef} className="flex-1 overflow-y-auto bg-transparent px-6 py-6 scrollbar-thin">
       <div className="mx-auto flex max-w-5xl flex-col gap-4">
         <AddBlockTrigger compact insertAfterId={undefined} />
         {blocks.length === 0
           ? emptyState
           : blocks.map((block, index) => (
-              <div key={block.id} className="group">
+              <div key={block.id} className="group" data-block-id={block.id}>
                 <BlockCard block={block} isSelected={selectedBlockId === block.id} />
                 <AddBlockTrigger insertAfterId={block.id} compact={index === blocks.length - 1} />
               </div>
