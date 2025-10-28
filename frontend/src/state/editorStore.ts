@@ -25,7 +25,7 @@ const deriveSidebarPanel = (block?: EditorBlock): EditorStore['sidebar']['active
 };
 
 export const useEditorStore = create<EditorStore>()(
-  immer((set, get) => ({
+  immer((set) => ({
     yamlDocument: '',
     blocks: [],
     selectedBlockId: undefined,

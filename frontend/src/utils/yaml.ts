@@ -2,26 +2,45 @@ import { parse, stringify } from 'yaml';
 import type { BlockLanguage, BlockSummary, BlockType } from '@/api/types';
 import type { EditorBlock, QuestionPreview } from '@/state/types';
 
-const BLOCK_SEPARATOR = /^---$/m;
-
 const KNOWN_BLOCK_TYPES: BlockType[] = [
   'metadata',
   'objects',
   'code',
   'attachment',
+  'attachments',
   'question',
-  'interview_order',
+  'features',
+  'auto terms',
+  'template',
+  'table',
+  'translations',
+  'include',
+  'default screen parts',
+  'modules',
+  'imports',
+  'sections',
+  'interview help',
+  'def',
+  'default validation messages',
+  'machine learning storage',
+  'initial',
   'event',
+  'comment',
+  'variable name',
+  'data',
+  'data from code',
+  'reset',
+  'on change',
+  'image sets',
+  'images',
+  'order',
+  'interview_order',
 ];
 
-const LANGUAGE_MAP: Record<BlockType, BlockLanguage> = {
-  metadata: 'yaml',
-  objects: 'yaml',
+const LANGUAGE_MAP: Partial<Record<BlockType, BlockLanguage>> = {
   code: 'python',
-  attachment: 'markdown',
-  question: 'yaml',
   interview_order: 'python',
-  event: 'yaml',
+  def: 'markdown',
 };
 
 const FIELD_RESERVED_KEYS = new Set([

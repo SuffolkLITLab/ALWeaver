@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useId } from 'react';
 import type { ChangeEvent, FocusEvent } from 'react';
 import { stringify } from 'yaml';
 import type { EditorBlock } from '@/state/types';
@@ -61,15 +61,23 @@ export function MandatoryEditor({ block }: MandatoryEditorProps): JSX.Element {
     commitChanges({ code: event.target.value });
   };
 
+  const checkboxId = useId();
+
   return (
     <div className="space-y-4">
-      <label className="flex items-start gap-3 rounded-xl border border-border bg-muted px-3 py-3">
-        <input type="checkbox" checked={mandatory} onChange={handleMandatoryChange} className="mt-1 h-4 w-4" />
-        <div>
+      <div className="flex items-start gap-3 rounded-xl border border-border bg-muted px-3 py-3">
+        <input
+          id={checkboxId}
+          type="checkbox"
+          checked={mandatory}
+          onChange={handleMandatoryChange}
+          className="mt-1 h-4 w-4"
+        />
+        <label htmlFor={checkboxId} className="flex-1 cursor-pointer">
           <p className="text-sm font-medium text-text-primary">Mandatory interview order</p>
           <p className="text-xs text-text-muted">Ensure this sequence runs before other screens.</p>
-        </div>
-      </label>
+        </label>
+      </div>
 
       <div className="space-y-2">
         <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor="order-code">

@@ -1,4 +1,5 @@
-export type BlockType =
+
+export type KnownBlockType =
   | 'metadata'
   | 'objects'
   | 'code'
@@ -6,7 +7,33 @@ export type BlockType =
   | 'question'
   | 'interview_order'
   | 'event'
-  | (string & {});
+  | 'features'
+  | 'auto terms'
+  | 'template'
+  | 'attachments'
+  | 'table'
+  | 'translations'
+  | 'include'
+  | 'default screen parts'
+  | 'modules'
+  | 'imports'
+  | 'sections'
+  | 'interview help'
+  | 'def'
+  | 'default validation messages'
+  | 'machine learning storage'
+  | 'initial'
+  | 'comment'
+  | 'variable name'
+  | 'data'
+  | 'data from code'
+  | 'reset'
+  | 'on change'
+  | 'image sets'
+  | 'images'
+  | 'order';
+
+export type BlockType = KnownBlockType | (string & { readonly __blockTypeBrand?: never });
 
 export type BlockLanguage = 'yaml' | 'python' | 'markdown';
 

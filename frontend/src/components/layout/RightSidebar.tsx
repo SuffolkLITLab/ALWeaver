@@ -25,10 +25,6 @@ export function RightSidebar(): JSX.Element {
     state.blocks.find((block) => block.id === state.selectedBlockId),
   );
 
-  if (activeView !== 'visual') {
-    return null;
-  }
-
   const isOpen = sidebar.isOpen || sidebar.pinned;
 
   const handleToggle = useCallback(() => {
@@ -57,6 +53,10 @@ export function RightSidebar(): JSX.Element {
         return selectedBlock ? <PropertiesPanel block={selectedBlock} /> : <ValidationSummary />;
     }
   }, [activePanel, selectedBlock]);
+
+  if (activeView !== 'visual') {
+    return null;
+  }
 
   return (
     <aside className="relative flex flex-col border-l border-border bg-surface">

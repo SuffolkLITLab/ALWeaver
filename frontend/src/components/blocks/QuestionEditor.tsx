@@ -476,9 +476,9 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
   return (
     <div className="space-y-5">
       <section className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
           Question
-        </label>
+        </p>
         <RichTextEditor
           value={questionText}
           onChange={setQuestionText}
@@ -489,9 +489,9 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
       </section>
 
       <section className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
           Subquestion
-        </label>
+        </p>
         <RichTextEditor
           value={subquestionText}
           onChange={setSubquestionText}

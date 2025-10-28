@@ -66,10 +66,6 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, className
     }
   }, [editor, value]);
 
-  if (!editor) {
-    return <div className={clsx('rounded-xl border border-border bg-background px-3 py-2', className)} />;
-  }
-
   const handleInsertConditional = useCallback(() => {
     if (!editor) {
       return;
@@ -96,6 +92,10 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, className
       editor.chain().focus().insertContent(`\n${snippet}\n`).run();
     }
   }, [editor]);
+
+  if (!editor) {
+    return <div className={clsx('rounded-xl border border-border bg-background px-3 py-2', className)} />;
+  }
 
   return (
     <div className={clsx('rounded-xl border border-border bg-surface shadow-soft', className)}>

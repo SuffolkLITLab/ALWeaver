@@ -1,7 +1,6 @@
-import { Fragment } from 'react';
 import type { EditorBlock } from '@/state/types';
-import { resolveBlockTypeLabel } from '@/utils/constants';
 import { QuestionEditor } from './QuestionEditor';
+import { YamlBlockEditor } from './YamlBlockEditor';
 
 interface BlockPreviewProps {
   block: EditorBlock;
@@ -82,27 +81,6 @@ function InterviewOrderPreview({ block }: BlockPreviewProps): JSX.Element {
     </div>
   );
 }
-
-function GenericPreview({ block }: BlockPreviewProps): JSX.Element {
-  const data = block.metadata.rawData;
-  if (!data) {
-    return <p className="text-sm text-text-muted">Preview unavailable for this block.</p>;
-  }
-
-  return (
-    <div className="space-y-2 text-sm text-text-muted">
-      {Object.entries(data).map(([key, value]) => (
-        <Fragment key={key}>
-          <p className="font-medium text-text-primary">{resolveBlockTypeLabel(block.type)} · {key}</p>
-          <pre className="max-h-56 overflow-auto rounded-xl border border-border bg-surface px-3 py-2 text-xs">
-            {JSON.stringify(value, null, 2)}
-          </pre>
-        </Fragment>
-      ))}
-    </div>
-  );
-}
-
 export function BlockPreview({ block }: BlockPreviewProps): JSX.Element {
   switch (block.type) {
     case 'metadata':
@@ -116,6 +94,6 @@ export function BlockPreview({ block }: BlockPreviewProps): JSX.Element {
     case 'interview_order':
       return <InterviewOrderPreview block={block} />;
     default:
-      return <GenericPreview block={block} />;
+      return <YamlBlockEditor block={block} />;
   }
 }

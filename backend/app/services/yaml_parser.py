@@ -53,7 +53,6 @@ LANGUAGE_MAP = {
     'objects': 'yaml',
     'question': 'yaml',
     'code': 'python',
-    'interview_order': 'python',
     'event': 'yaml',
     'features': 'yaml',
     'auto terms': 'yaml',
