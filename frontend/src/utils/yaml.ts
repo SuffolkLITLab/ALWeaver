@@ -125,10 +125,6 @@ function labelForBlock(type: BlockType, data: Record<string, unknown>): string |
     return 'Objects';
   }
 
-  if (type === 'interview_order') {
-    return 'Interview Order';
-  }
-
   return type;
 }
 

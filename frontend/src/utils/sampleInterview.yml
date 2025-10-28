@@ -39,4 +39,3 @@ question: What is your favorite number?
 fields:
   - Number: favorite_number
     datatype: number
----
