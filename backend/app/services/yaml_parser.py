@@ -46,7 +46,6 @@ BLOCK_TYPES = (
     'image sets',
     'images',
     'order',
-    'interview_order',
 )
 
 LANGUAGE_MAP = {
@@ -82,7 +81,6 @@ LANGUAGE_MAP = {
     'image sets': 'yaml',
     'images': 'yaml',
     'order': 'yaml',
-    'interview_order': 'python',
 }
 
 
@@ -141,6 +139,8 @@ def _guess_block_type(data: dict) -> str:
 
 
 def _label_for_block(block_type: str, data: dict) -> str | None:
+    if isinstance(data.get('interview_order'), dict):
+        return 'Interview Order'
     if block_type == 'metadata':
         meta = data.get('metadata') or {}
         return f"{meta.get('title')}" if meta.get('title') else 'Metadata'
@@ -150,8 +150,6 @@ def _label_for_block(block_type: str, data: dict) -> str | None:
     if block_type == 'code':
         code = data.get('code')
         return f"{code.splitlines()[0][:24]}" if isinstance(code, str) and code else 'Code'
-    if block_type == 'interview_order':
-        return 'Interview Order'
     if block_type == 'attachment':
         payload = data.get('attachment') or {}
         return f"{payload.get('name')}" if payload.get('name') else 'Attachment'
@@ -180,16 +178,14 @@ def analyze_blocks(document: str) -> list[BlockAnalysis]:
         label = _label_for_block(block_type, data)
         order_items: list[str] = []
 
-        block_payload = data.get(block_type) if block_type == 'interview_order' else None
-        if block_type == 'interview_order' and isinstance(block_payload, dict):
-            mandatory_flag = _coerce_bool(block_payload.get('mandatory'))
+        interview_order_payload = data.get('interview_order')
+        if isinstance(interview_order_payload, dict):
+            code_value = interview_order_payload.get('code')
+            code = code_value if isinstance(code_value, str) else None
+            order_items = _order_items_from_code(code)
+            mandatory_flag = _coerce_bool(interview_order_payload.get('mandatory'))
         else:
             mandatory_flag = _coerce_bool(data.get('mandatory'))
-
-        if block_type == 'interview_order':
-            details = data.get('interview_order') or {}
-            code = details.get('code') if isinstance(details, dict) else None
-            order_items = _order_items_from_code(code if isinstance(code, str) else None)
 
         analyses.append(
             BlockAnalysis(

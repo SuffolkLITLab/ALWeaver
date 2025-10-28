@@ -82,6 +82,9 @@ function InterviewOrderPreview({ block }: BlockPreviewProps): JSX.Element {
   );
 }
 export function BlockPreview({ block }: BlockPreviewProps): JSX.Element {
+  if (block.metadata.isInterviewOrder) {
+    return <InterviewOrderPreview block={block} />;
+  }
   switch (block.type) {
     case 'metadata':
       return <MetadataPreview block={block} />;
@@ -91,8 +94,6 @@ export function BlockPreview({ block }: BlockPreviewProps): JSX.Element {
       return <CodePreview block={block} />;
     case 'attachment':
       return <AttachmentPreview block={block} />;
-    case 'interview_order':
-      return <InterviewOrderPreview block={block} />;
     default:
       return <YamlBlockEditor block={block} />;
   }

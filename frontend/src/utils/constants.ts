@@ -7,7 +7,6 @@ const KNOWN_LABELS: Partial<Record<BlockType, string>> = {
   code: 'Code',
   attachment: 'Attachment',
   question: 'Question',
-  interview_order: 'Interview Order',
   event: 'Event',
   features: 'Features',
   'auto terms': 'Auto Terms',
@@ -72,7 +71,6 @@ export const BLOCK_TYPE_ORDER: BlockType[] = [
   'image sets',
   'images',
   'order',
-  'interview_order',
 ];
 
 export const LANGUAGE_LABELS: Record<string, string> = {

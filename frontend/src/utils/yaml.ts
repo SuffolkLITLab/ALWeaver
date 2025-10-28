@@ -34,12 +34,10 @@ const KNOWN_BLOCK_TYPES: BlockType[] = [
   'image sets',
   'images',
   'order',
-  'interview_order',
 ];
 
 const LANGUAGE_MAP: Partial<Record<BlockType, BlockLanguage>> = {
   code: 'python',
-  interview_order: 'python',
   def: 'markdown',
 };
 
@@ -106,6 +104,10 @@ function guessBlockType(data: unknown): BlockType {
 }
 
 function labelForBlock(type: BlockType, data: Record<string, unknown>): string | undefined {
+  const interviewOrder = data['interview_order'];
+  if (interviewOrder && typeof interviewOrder === 'object') {
+    return 'Interview Order';
+  }
   if (type === 'metadata') {
     const meta = (data.metadata ?? {}) as Record<string, unknown>;
     const title = typeof meta.title === 'string' ? meta.title : undefined;
@@ -148,7 +150,7 @@ function labelForBlock(type: BlockType, data: Record<string, unknown>): string |
 }
 
 function extractOrderItems(block: Record<string, unknown>): string[] {
-  const interviewOrder = block.interview_order;
+  const interviewOrder = block['interview_order'];
   if (!interviewOrder || typeof interviewOrder !== 'object') {
     return [];
   }
@@ -250,16 +252,19 @@ function parseBlock(raw: string, position: number): EditorBlock {
   const label = labelForBlock(type, blockRecord);
   const language = LANGUAGE_MAP[type] ?? 'yaml';
 
-  const orderItems = type === 'interview_order' ? extractOrderItems(blockRecord) : [];
+  const interviewOrder = blockRecord['interview_order'];
+  const hasInterviewOrder = typeof interviewOrder === 'object' && interviewOrder !== null;
+  const orderItems = hasInterviewOrder ? extractOrderItems(blockRecord) : undefined;
   let isMandatory = false;
-  if (type === 'interview_order') {
-    isMandatory = !!(
-      blockRecord.interview_order &&
-      typeof blockRecord.interview_order === 'object' &&
-      (blockRecord.interview_order as Record<string, unknown>).mandatory
-    );
-  } else if (blockRecord.mandatory !== undefined) {
-    const mandatoryValue = blockRecord.mandatory;
+  if (hasInterviewOrder) {
+    const mandatoryValue = (interviewOrder as Record<string, unknown>).mandatory;
+    if (typeof mandatoryValue === 'string') {
+      isMandatory = mandatoryValue.toLowerCase() === 'true';
+    } else if (typeof mandatoryValue === 'boolean') {
+      isMandatory = mandatoryValue;
+    }
+  } else if (blockRecord['mandatory'] !== undefined) {
+    const mandatoryValue = blockRecord['mandatory'];
     if (typeof mandatoryValue === 'string') {
       isMandatory = mandatoryValue.toLowerCase() === 'true';
     } else if (typeof mandatoryValue === 'boolean') {

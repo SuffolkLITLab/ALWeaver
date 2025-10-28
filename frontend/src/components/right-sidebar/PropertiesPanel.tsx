@@ -28,7 +28,7 @@ export function PropertiesPanel({ block }: PropertiesPanelProps): JSX.Element {
   const handleToggleMandatory = useCallback(
     (next: boolean) => {
       const base = { ...((block.metadata.rawData ?? {}) as Record<string, unknown>) };
-      if (block.type === 'interview_order') {
+      if (block.metadata.isInterviewOrder) {
         const interviewOrder = {
           ...(((base.interview_order ?? {}) as Record<string, unknown>) || {}),
         };
@@ -54,7 +54,7 @@ export function PropertiesPanel({ block }: PropertiesPanelProps): JSX.Element {
       const yaml = stringify(base).trim();
       upsertBlockFromRaw(block.id, yaml);
     },
-    [block.id, block.metadata.rawData, block.type, upsertBlockFromRaw],
+    [block.id, block.metadata.isInterviewOrder, block.metadata.rawData, upsertBlockFromRaw],
   );
 
   return (

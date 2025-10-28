@@ -5,14 +5,16 @@ import type { EditorStore, EditorBlock, BlockViewMode } from './types';
 import { buildYamlDocument, parseBlockFromRaw, parseBlocksFromYaml, serializeBlock } from '@/utils/yaml';
 import { createBlockTemplate } from '@/utils/blockTemplates';
 
-const DEFAULT_BLOCK_VIEW: BlockViewMode = 'preview';
+const defaultBlockView = (block: EditorBlock): BlockViewMode => {
+  return block.type === 'code' ? 'code' : 'preview';
+};
 const DEFAULT_DOCUMENT_NAME = 'untitled.yml';
 
 const deriveSidebarPanel = (block?: EditorBlock): EditorStore['sidebar']['activePanel'] => {
   if (!block) {
     return 'properties';
   }
-  if (block.type === 'interview_order') {
+  if (block.metadata.isInterviewOrder) {
     return 'mandatory';
   }
   if (block.metadata.isMetadata) {
@@ -55,7 +57,7 @@ export const useEditorStore = create<EditorStore>()(
         state.blocks = blocks;
         state.blockViewMode = {};
         blocks.forEach((block) => {
-          state.blockViewMode[block.id] = DEFAULT_BLOCK_VIEW;
+          state.blockViewMode[block.id] = defaultBlockView(block);
         });
         state.sidebar = {
           isOpen: false,
@@ -84,7 +86,7 @@ export const useEditorStore = create<EditorStore>()(
 
         const nextModes: Record<string, BlockViewMode> = {};
         blocks.forEach((block) => {
-          nextModes[block.id] = state.blockViewMode[block.id] ?? DEFAULT_BLOCK_VIEW;
+          nextModes[block.id] = state.blockViewMode[block.id] ?? defaultBlockView(block);
         });
         state.blockViewMode = nextModes;
         state.summaries = {};
@@ -106,7 +108,9 @@ export const useEditorStore = create<EditorStore>()(
 
     toggleBlockView: (blockId, mode) => {
       set((state) => {
-        const current = state.blockViewMode[blockId] ?? DEFAULT_BLOCK_VIEW;
+        const target = state.blocks.find((candidate) => candidate.id === blockId);
+        const fallback = target ? defaultBlockView(target) : 'preview';
+        const current = state.blockViewMode[blockId] ?? fallback;
         const next = mode ?? (current === 'preview' ? 'code' : 'preview');
         state.blockViewMode[blockId] = next;
       });
@@ -152,7 +156,7 @@ export const useEditorStore = create<EditorStore>()(
         state.blocks = blocks;
         const nextModes: Record<string, BlockViewMode> = {};
         blocks.forEach((block) => {
-          nextModes[block.id] = state.blockViewMode[block.id] ?? DEFAULT_BLOCK_VIEW;
+          nextModes[block.id] = state.blockViewMode[block.id] ?? defaultBlockView(block);
         });
         state.blockViewMode = nextModes;
         state.summaries = {};
@@ -207,7 +211,7 @@ export const useEditorStore = create<EditorStore>()(
           const nextBlock = parseBlockFromRaw(raw, state.blocks.length);
           nextBlock.id = blockId;
           state.blocks.push(nextBlock);
-          state.blockViewMode[blockId] = state.blockViewMode[blockId] ?? 'code';
+          state.blockViewMode[blockId] = state.blockViewMode[blockId] ?? defaultBlockView(nextBlock);
         } else {
           const reference = state.blocks[existingIndex];
           const updated = parseBlockFromRaw(raw, reference.position);
@@ -216,7 +220,7 @@ export const useEditorStore = create<EditorStore>()(
             id: blockId,
             position: reference.position,
           };
-          state.blockViewMode[blockId] = state.blockViewMode[blockId] ?? 'code';
+          state.blockViewMode[blockId] = state.blockViewMode[blockId] ?? defaultBlockView(updated);
         }
 
         state.yamlDocument = buildYamlDocument(state.blocks);
@@ -285,7 +289,7 @@ export const useEditorStore = create<EditorStore>()(
 
         const nextModes: Record<string, BlockViewMode> = {};
         nextBlocks.forEach((block) => {
-          nextModes[block.id] = state.blockViewMode[block.id] ?? DEFAULT_BLOCK_VIEW;
+          nextModes[block.id] = state.blockViewMode[block.id] ?? defaultBlockView(block);
         });
 
         state.yamlDocument = nextYaml;

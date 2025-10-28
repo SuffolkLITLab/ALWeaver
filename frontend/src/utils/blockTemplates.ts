@@ -56,11 +56,6 @@ fields:
   objects: `objects:
   - party: Individual
 `,
-  interview_order: `interview_order:
-  mandatory: false
-  code: |
-    # goal_variable_one
-`,
   event: `event: next_step
 `,
   features: createListBlock('features', 'feature_name'),

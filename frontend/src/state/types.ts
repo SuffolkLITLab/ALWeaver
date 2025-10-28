@@ -20,7 +20,7 @@ export interface BlockMetadata {
   isMandatory: boolean;
   isAttachment: boolean;
   isMetadata: boolean;
-  orderItems: string[];
+  orderItems?: string[];
   questionPreview?: QuestionPreview;
   rawData?: Record<string, unknown>;
 }

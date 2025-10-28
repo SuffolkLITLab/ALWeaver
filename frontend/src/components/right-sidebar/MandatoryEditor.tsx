@@ -10,15 +10,24 @@ interface MandatoryEditorProps {
 
 export function MandatoryEditor({ block }: MandatoryEditorProps): JSX.Element {
   const upsertBlockFromRaw = useEditorStore((state) => state.upsertBlockFromRaw);
+  const isInterviewOrder = block.metadata.isInterviewOrder;
 
   const interviewOrder = useMemo(() => {
+    if (!isInterviewOrder) {
+      return {} as Record<string, unknown>;
+    }
     return (block.metadata.rawData?.interview_order ?? {}) as Record<string, unknown>;
-  }, [block.metadata.rawData]);
+  }, [block.metadata.rawData, isInterviewOrder]);
 
   const [orderText, setOrderText] = useState('');
   const [mandatory, setMandatory] = useState(false);
 
   useEffect(() => {
+    if (!isInterviewOrder) {
+      setOrderText('');
+      setMandatory(false);
+      return;
+    }
     if (typeof interviewOrder.code === 'string') {
       setOrderText(interviewOrder.code.trim());
     } else {
@@ -32,10 +41,13 @@ export function MandatoryEditor({ block }: MandatoryEditorProps): JSX.Element {
       nextMandatory = rawMandatory;
     }
     setMandatory(nextMandatory);
-  }, [block.metadata.orderItems, interviewOrder]);
+  }, [block.metadata.orderItems, interviewOrder, isInterviewOrder]);
 
   const commitChanges = useCallback(
     (partial: Partial<Record<'code' | 'mandatory', unknown>>) => {
+      if (!isInterviewOrder) {
+        return;
+      }
       const base = (block.metadata.rawData ?? {}) as Record<string, unknown>;
       const current = (base.interview_order ?? {}) as Record<string, unknown>;
       const nextInterviewOrder = {
@@ -54,7 +66,7 @@ export function MandatoryEditor({ block }: MandatoryEditorProps): JSX.Element {
       const yaml = stringify(nextRawData).trim();
       upsertBlockFromRaw(block.id, yaml);
     },
-    [block.id, block.metadata.rawData, upsertBlockFromRaw],
+    [block.id, block.metadata.rawData, isInterviewOrder, upsertBlockFromRaw],
   );
 
   const handleMandatoryChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -72,6 +84,14 @@ export function MandatoryEditor({ block }: MandatoryEditorProps): JSX.Element {
   };
 
   const checkboxId = useId();
+
+  if (!isInterviewOrder) {
+    return (
+      <div className="rounded-xl border border-border bg-muted px-3 py-4 text-sm text-text-muted">
+        This block does not define an interview order.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

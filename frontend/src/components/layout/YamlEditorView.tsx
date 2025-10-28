@@ -3,7 +3,7 @@ import Editor from '@monaco-editor/react';
 import { useEditorStore } from '@/state/editorStore';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
-const DEBOUNCE_MS = 500;
+const DEBOUNCE_MS = 200;
 
 export function YamlEditorView(): JSX.Element {
   const yamlDocument = useEditorStore((state) => state.yamlDocument);

@@ -5,7 +5,6 @@ export type KnownBlockType =
   | 'code'
   | 'attachment'
   | 'question'
-  | 'interview_order'
   | 'event'
   | 'features'
   | 'auto terms'
