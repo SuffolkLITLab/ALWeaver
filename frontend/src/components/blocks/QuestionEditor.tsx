@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Plus, Trash2, GripVertical } from 'lucide-react';
-import { stringify } from 'yaml';
+import { stringify, Scalar } from 'yaml';
 import type { EditorBlock } from '@/state/types';
 import { useEditorStore } from '@/state/editorStore';
 import { FIELD_DATATYPE_OPTIONS } from '@/utils/constants';
@@ -94,6 +94,16 @@ const ensureOptionSeed = (): FieldOptionState[] =>
     value: seed.value || slugify(seed.label, index),
   }));
 
+const toBlockScalar = (value: string): Scalar | undefined => {
+  if (!value.trim()) {
+    return undefined;
+  }
+  const normalized = value.endsWith('\n') ? value : `${value}\n`;
+  const scalar = new Scalar(normalized);
+  scalar.type = Scalar.BLOCK_LITERAL;
+  return scalar;
+};
+
 export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
   const upsertBlockFromRaw = useEditorStore((state) => state.upsertBlockFromRaw);
 
@@ -144,11 +154,14 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
       delete base.subquestion;
       delete base.fields;
 
-      if (nextQuestion.trim()) {
-        base.question = nextQuestion;
+      const questionScalar = toBlockScalar(nextQuestion);
+      if (questionScalar) {
+        base.question = questionScalar;
       }
-      if (nextSubquestion.trim()) {
-        base.subquestion = nextSubquestion;
+
+      const subquestionScalar = toBlockScalar(nextSubquestion);
+      if (subquestionScalar) {
+        base.subquestion = subquestionScalar;
       }
 
       if (nextFields.length > 0) {
@@ -471,7 +484,7 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
           onChange={setQuestionText}
           onBlur={handleQuestionBlur}
           placeholder="Enter the prompt shown to users"
-          className="min-h-[180px]"
+          className="min-h-[100px] text-2xl font-bold leading-snug"
         />
       </section>
 

@@ -41,33 +41,33 @@ const FIELD_RESERVED_KEYS = new Set([
 ]);
 
 export function splitYamlDocument(yamlDocument: string): string[] {
-  const trimmed = yamlDocument.trim();
-  if (!trimmed) {
+  if (!yamlDocument) {
     return [];
   }
 
   const parts: string[] = [];
   let buffer: string[] = [];
 
-  for (const line of trimmed.split('\n')) {
+  const lines = yamlDocument.replace(/\r\n?/g, '\n').split('\n');
+
+  for (const line of lines) {
     if (line.trim() === '---') {
       if (buffer.length > 0) {
-        parts.push(buffer.join('\n').trim());
+        parts.push(buffer.join('\n'));
+        buffer = [];
+      } else {
+        buffer = [];
       }
-      buffer = [];
-    } else {
-      buffer.push(line);
+      continue;
     }
+    buffer.push(line);
   }
 
   if (buffer.length > 0) {
-    const finalPart = buffer.join('\n').trim();
-    if (finalPart) {
-      parts.push(finalPart);
-    }
+    parts.push(buffer.join('\n'));
   }
 
-  return parts;
+  return parts.filter((part, index) => part.length > 0 || index === parts.length - 1);
 }
 
 function guessBlockType(data: unknown): BlockType {
@@ -97,7 +97,7 @@ function labelForBlock(type: BlockType, data: Record<string, unknown>): string |
     const question = data.question;
     if (typeof question === 'string') {
       const firstLine = question.trim().split('\n')[0];
-      return `Question • ${firstLine}`;
+      return `${firstLine}`;
     }
     return 'Question';
   }
@@ -267,7 +267,7 @@ function parseBlock(raw: string, position: number): EditorBlock {
     label,
     language,
     position,
-    raw: raw.trim(),
+    raw,
     metadata,
   };
 }
@@ -311,10 +311,10 @@ export function mergeServerSummaries(blocks: EditorBlock[], summaries: BlockSumm
 export function serializeBlock(block: EditorBlock): string {
   try {
     if (block.metadata?.rawData && Object.keys(block.metadata.rawData).length > 0) {
-      return stringify(block.metadata.rawData).trim();
+      return ensureTrailingNewline(stringify(block.metadata.rawData));
     }
     const parsed = parse(block.raw);
-    return stringify(parsed).trim();
+    return ensureTrailingNewline(stringify(parsed));
   } catch {
     return block.raw.trim();
   }
@@ -322,4 +322,11 @@ export function serializeBlock(block: EditorBlock): string {
 
 export function buildYamlDocument(blocks: EditorBlock[]): string {
   return blocks.map((block) => serializeBlock(block)).join('\n\n---\n\n');
+}
+
+function ensureTrailingNewline(input: string): string {
+  if (!input.endsWith('\n')) {
+    return `${input}\n`;
+  }
+  return input;
 }
