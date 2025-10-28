@@ -48,6 +48,7 @@ async def parse_yaml(request: ParseRequest) -> ParseResponse:
       language=analysis.language,  # type: ignore[arg-type]
       position=analysis.position,
       order_items=analysis.order_items or None,
+      isMandatory=analysis.is_mandatory,
     )
     for analysis in analyses
   ]

@@ -12,7 +12,8 @@ export function useFilteredBlocks() {
         block.label?.toLowerCase().includes(filters.search.toLowerCase()) ||
         block.id.toLowerCase().includes(filters.search.toLowerCase());
       const matchesType = filters.types.length === 0 || filters.types.includes(block.type);
-      return matchesQuery && matchesType;
+      const matchesMandatory = !filters.mandatoryOnly || block.metadata.isMandatory;
+      return matchesQuery && matchesType && matchesMandatory;
     });
   }, [blocks, filters]);
 }

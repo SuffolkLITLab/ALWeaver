@@ -18,6 +18,7 @@ class BlockSummary(BaseModel):
   language: Literal['yaml', 'python', 'markdown'] = 'yaml'
   position: int
   order_items: list[str] | None = None
+  isMandatory: bool | None = None
 
 
 class ParseRequest(BaseModel):

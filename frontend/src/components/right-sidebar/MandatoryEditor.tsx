@@ -24,7 +24,14 @@ export function MandatoryEditor({ block }: MandatoryEditorProps): JSX.Element {
     } else {
       setOrderText(block.metadata.orderItems.join('\n'));
     }
-    setMandatory(Boolean(interviewOrder.mandatory));
+    const rawMandatory = interviewOrder.mandatory;
+    let nextMandatory = false;
+    if (typeof rawMandatory === 'string') {
+      nextMandatory = rawMandatory.toLowerCase() === 'true';
+    } else if (typeof rawMandatory === 'boolean') {
+      nextMandatory = rawMandatory;
+    }
+    setMandatory(nextMandatory);
   }, [block.metadata.orderItems, interviewOrder]);
 
   const commitChanges = useCallback(
@@ -35,6 +42,9 @@ export function MandatoryEditor({ block }: MandatoryEditorProps): JSX.Element {
         ...current,
         ...partial,
       };
+      if (Object.prototype.hasOwnProperty.call(partial, 'mandatory') && partial.mandatory === undefined) {
+        delete nextInterviewOrder.mandatory;
+      }
 
       const nextRawData = {
         ...base,
@@ -50,7 +60,7 @@ export function MandatoryEditor({ block }: MandatoryEditorProps): JSX.Element {
   const handleMandatoryChange = (event: ChangeEvent<HTMLInputElement>) => {
     const isChecked = event.target.checked;
     setMandatory(isChecked);
-    commitChanges({ mandatory: isChecked });
+    commitChanges({ mandatory: isChecked ? true : undefined });
   };
 
   const handleOrderTextChange = (event: ChangeEvent<HTMLTextAreaElement>) => {

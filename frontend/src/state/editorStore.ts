@@ -12,14 +12,14 @@ const deriveSidebarPanel = (block?: EditorBlock): EditorStore['sidebar']['active
   if (!block) {
     return 'properties';
   }
+  if (block.type === 'interview_order') {
+    return 'mandatory';
+  }
   if (block.metadata.isMetadata) {
     return 'metadata';
   }
   if (block.metadata.isAttachment) {
     return 'attachment';
-  }
-  if (block.metadata.isMandatory) {
-    return 'mandatory';
   }
   return 'properties';
 };
@@ -33,6 +33,7 @@ export const useEditorStore = create<EditorStore>()(
     filters: {
       search: '',
       types: [],
+      mandatoryOnly: false,
     },
     sidebar: {
       isOpen: false,
@@ -67,6 +68,11 @@ export const useEditorStore = create<EditorStore>()(
           issues: [],
         };
         state.summaries = {};
+        state.filters = {
+          search: '',
+          types: [],
+          mandatoryOnly: false,
+        };
         state.documentName = options?.documentName ?? state.documentName ?? DEFAULT_DOCUMENT_NAME;
       });
     },
@@ -123,12 +129,18 @@ export const useEditorStore = create<EditorStore>()(
         state.filters.types = Array.from(next);
       });
     },
+    toggleMandatoryFilter: () => {
+      set((state) => {
+        state.filters.mandatoryOnly = !state.filters.mandatoryOnly;
+      });
+    },
 
     clearFilters: () => {
       set((state) => {
         state.filters = {
           search: '',
           types: [],
+          mandatoryOnly: false,
         };
       });
     },
@@ -233,9 +245,7 @@ export const useEditorStore = create<EditorStore>()(
             metadata: {
               ...block.metadata,
               orderItems: summary.order_items ?? block.metadata.orderItems,
-              isMandatory:
-                summary.isMandatory ??
-                (block.type === 'interview_order' ? block.metadata.isMandatory : block.metadata.isMandatory),
+              isMandatory: summary.isMandatory ?? block.metadata.isMandatory,
               isAttachment: summary.isAttachment ?? block.metadata.isAttachment,
               isMetadata: summary.isMetadata ?? block.metadata.isMetadata,
             },

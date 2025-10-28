@@ -40,6 +40,7 @@ export type BlockViewMode = 'preview' | 'code';
 export interface EditorFilters {
   search: string;
   types: BlockType[];
+  mandatoryOnly: boolean;
 }
 
 export type SidebarPanel = 'properties' | 'metadata' | 'mandatory' | 'attachment' | 'validation';
@@ -77,6 +78,7 @@ export interface EditorStoreActions {
   toggleBlockView: (blockId: string, mode?: BlockViewMode) => void;
   setFilterSearch: (search: string) => void;
   toggleFilterType: (blockType: BlockType) => void;
+  toggleMandatoryFilter: () => void;
   clearFilters: () => void;
   setYamlDocument: (yaml: string) => void;
   setValidationState: (validation: Partial<ValidationState>) => void;

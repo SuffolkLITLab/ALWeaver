@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Any, Iterable
 import importlib
 import tempfile
 import os
@@ -46,6 +46,7 @@ BLOCK_TYPES = (
     'image sets',
     'images',
     'order',
+    'interview_order',
 )
 
 LANGUAGE_MAP = {
@@ -81,6 +82,7 @@ LANGUAGE_MAP = {
     'image sets': 'yaml',
     'images': 'yaml',
     'order': 'yaml',
+    'interview_order': 'python',
 }
 
 
@@ -92,6 +94,18 @@ class BlockAnalysis:
     language: str
     position: int
     order_items: list[str]
+    is_mandatory: bool
+
+
+def _coerce_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        return normalized in {'true', 'yes', '1', 'on'}
+    if isinstance(value, (int, float)):
+        return bool(value)
+    return False
 
 
 def _split_blocks(document: str) -> list[str]:
@@ -166,6 +180,12 @@ def analyze_blocks(document: str) -> list[BlockAnalysis]:
         label = _label_for_block(block_type, data)
         order_items: list[str] = []
 
+        block_payload = data.get(block_type) if block_type == 'interview_order' else None
+        if block_type == 'interview_order' and isinstance(block_payload, dict):
+            mandatory_flag = _coerce_bool(block_payload.get('mandatory'))
+        else:
+            mandatory_flag = _coerce_bool(data.get('mandatory'))
+
         if block_type == 'interview_order':
             details = data.get('interview_order') or {}
             code = details.get('code') if isinstance(details, dict) else None
@@ -179,6 +199,7 @@ def analyze_blocks(document: str) -> list[BlockAnalysis]:
                 language=LANGUAGE_MAP.get(block_type, 'yaml'),
                 position=position,
                 order_items=order_items,
+                is_mandatory=mandatory_flag,
             ),
         )
 
@@ -242,9 +263,10 @@ def validate_document(document: str) -> list[str]:
         if 'interview_order' in data:
             metadata = data['interview_order'] or {}
             mandatory = metadata.get('mandatory')
-            if mandatory and seen_mandatory:
+            mandatory_flag = _coerce_bool(mandatory)
+            if mandatory_flag and seen_mandatory:
                 issues.append('Only one mandatory interview_order block is allowed.')
-            seen_mandatory = seen_mandatory or bool(mandatory)
+            seen_mandatory = seen_mandatory or mandatory_flag
 
     return issues
 
