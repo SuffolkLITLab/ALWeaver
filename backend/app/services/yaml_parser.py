@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Iterable
+import importlib
+import tempfile
+import os
 
 from ruamel.yaml import YAML
 from ruamel.yaml.error import YAMLError
@@ -12,13 +15,38 @@ yaml.width = 4096
 
 
 BLOCK_TYPES = (
-    'metadata',
-    'objects',
-    'code',
-    'attachment',
     'question',
-    'interview_order',
+    'subquestion',
+    'code',
+    'objects',
+    'features',
+    'auto terms',
+    'template',
+    'attachment',
+    'attachments',
+    'table',
+    'translations',
+    'include',
+    'default screen parts',
+    'metadata',
+    'modules',
+    'imports',
+    'sections',
+    'interview help',
+    'def',
+    'default validation messages',
+    'machine learning storage',
+    'initial',
     'event',
+    'comment',
+    'variable name',
+    'data',
+    'data from code',
+    'reset',
+    'on change',
+    'image sets',
+    'images',
+    'order',
 )
 
 LANGUAGE_MAP = {
@@ -135,6 +163,38 @@ def analyze_blocks(document: str) -> list[BlockAnalysis]:
 
 def validate_document(document: str) -> list[str]:
     issues: list[str] = []
+
+    # Prefer using the third-party DAYamlChecker if available. It validates
+    # docassemble YAML structure and returns structured errors. We call its
+    # `find_errors` function by writing the document to a temporary file
+    # (the module expects a filename).
+    dayaml_mod = None
+    try:
+        dayaml_mod = importlib.import_module("dayamlchecker.yaml_structure")
+    except Exception:
+        dayaml_mod = None
+
+    if dayaml_mod is not None:
+        tmp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as tf:
+                tf.write(document)
+                tf.flush()
+                tmp_path = tf.name
+
+            try:
+                errors = dayaml_mod.find_errors(tmp_path) or []
+                for e in errors:
+                    # The YAMLError class in the package implements __str__
+                    issues.append(str(e))
+            except Exception as exc:  # pragma: no cover - defensive
+                issues.append(f"dayamlchecker validation failed: {exc}")
+        finally:
+            if tmp_path:
+                try:
+                    os.unlink(tmp_path)
+                except Exception:
+                    pass
 
     try:
         blocks = analyze_blocks(document)
