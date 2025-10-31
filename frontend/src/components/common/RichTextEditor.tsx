@@ -165,7 +165,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, className
 
   return (
     <>
-      <div className={clsx('group rounded-xl border border-border bg-surface shadow-soft', className)}>
+      <div className={clsx('group flex flex-col rounded-xl border border-border bg-surface shadow-soft', className)}>
         <div className="flex flex-wrap items-center gap-1 border-b border-border px-2 py-1.5">
           <button type="button" className={BUTTON_BASE} onMouseDown={preventFocusSteal} onClick={() => prefixLines('## ')} aria-label="Heading"><Heading className="h-4 w-4" /></button>
           <button type="button" className={BUTTON_BASE} onMouseDown={preventFocusSteal} onClick={() => wrap('**', '**')} aria-label="Bold"><Bold className="h-4 w-4" /></button>
@@ -201,7 +201,7 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, className
             </button>
           </div>
         </div>
-        <div className="max-h-72 min-h-[8rem] overflow-y-auto px-3 py-2">
+        <div className="flex-1 overflow-y-auto px-3 py-2 flex flex-col">
           {mode === 'edit' ? (
             <textarea
               ref={textareaRef}
@@ -209,11 +209,11 @@ export function RichTextEditor({ value, onChange, onBlur, placeholder, className
               onChange={handleTextChange}
               onBlur={handleTextBlur}
               placeholder={placeholder ?? 'Write content in Markdown…'}
-              className="block h-full w-full resize-none border-none bg-transparent font-mono text-sm text-text-primary focus:outline-none focus:ring-0"
+              className="flex-1 resize-none border-none bg-transparent font-mono text-sm text-text-primary focus:outline-none focus:ring-0"
             />
           ) : (
             <div
-              className="prose prose-sm max-w-none text-text-primary"
+              className="prose prose-sm max-w-none text-text-primary flex-1"
               dangerouslySetInnerHTML={{ __html: markdownToHtml(value) || '<p></p>' }}
             />
           )}
