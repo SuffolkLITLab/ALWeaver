@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 from dataclasses import dataclass
 from typing import Any, Iterable
 import importlib
@@ -81,6 +82,30 @@ LANGUAGE_MAP = {
     'image sets': 'yaml',
     'images': 'yaml',
     'order': 'yaml',
+}
+
+DATATYPE_MAP = {
+    'text': 'str',
+    'area': 'str',
+    'password': 'str',
+    'email': 'str',
+    'date': 'date',
+    'datetime': 'datetime',
+    'time': 'time',
+    'integer': 'int',
+    'number': 'float',
+    'currency': 'float',
+    'boolean': 'bool',
+    'yesno': 'bool',
+    'noyes': 'bool',
+    'range': 'float',
+    'object': 'dict',
+    'choices': 'list',
+    'dropdown': 'Any',
+    'multiselect': 'list',
+    'combobox': 'list',
+    'file': 'str',
+    'files': 'list',
 }
 
 
@@ -273,3 +298,73 @@ def iter_blocks(document: str) -> Iterable[dict]:
             yield yaml.load(chunk) or {}
         except YAMLError:  # pragma: no cover - validated separately
             continue
+
+
+def _get_type_from_ast_node(node: ast.expr) -> str:
+    if isinstance(node, ast.Constant):
+        return type(node.value).__name__
+    if isinstance(node, ast.Num):
+        return type(node.n).__name__
+    if isinstance(node, ast.Str):
+        return 'str'
+    if isinstance(node, ast.NameConstant):
+        return type(node.value).__name__
+    if isinstance(node, (ast.List, ast.ListComp)):
+        return 'list'
+    if isinstance(node, (ast.Dict, ast.DictComp)):
+        return 'dict'
+    if isinstance(node, ast.Tuple):
+        return 'tuple'
+    if isinstance(node, ast.Set):
+        return 'set'
+    return 'Any'
+
+
+def _extract_variables_from_code(code: str) -> dict[str, str]:
+    """
+    Parses a Python code snippet and extracts the names of variables being assigned
+    and their inferred Python types.
+    """
+    variables = {}
+    try:
+        tree = ast.parse(code)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Assign):
+                var_type = _get_type_from_ast_node(node.value)
+                for target in node.targets:
+                    if isinstance(target, ast.Name):
+                        variables[target.id] = var_type
+    except (SyntaxError, TypeError):
+        pass
+    return variables
+
+
+def extract_variables(document: str) -> list[dict[str, str]]:
+    """
+    Parses a YAML document and extracts a list of all defined variables
+    with their inferred Python types.
+    """
+    variables: dict[str, str] = {}
+    all_blocks = list(iter_blocks(document))
+
+    # Pass 1: from code blocks (lower priority)
+    for block in all_blocks:
+        if 'code' in block and isinstance(block['code'], str):
+            code_variables = _extract_variables_from_code(block['code'])
+            for name, type_ in code_variables.items():
+                variables[name] = type_
+
+    # Pass 2: from fields (higher priority)
+    for block in all_blocks:
+        if 'fields' in block and isinstance(block['fields'], list):
+            for field in block['fields']:
+                if isinstance(field, dict) and field:
+                    first_key = next(iter(field))
+                    variable_name = field[first_key]
+                    if isinstance(variable_name, str):
+                        datatype = field.get('datatype', 'text')
+                        py_type = DATATYPE_MAP.get(datatype, 'Any')
+                        variables[variable_name] = py_type
+
+    result = [{'name': name, 'type': type_} for name, type_ in variables.items()]
+    return sorted(result, key=lambda v: v['name'])

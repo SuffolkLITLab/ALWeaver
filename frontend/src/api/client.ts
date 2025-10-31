@@ -1,4 +1,4 @@
-import type { ParseResponse, ValidateResponse } from './types';
+import type { ParseResponse, SaveResponse, ValidateResponse, VariablesResponse } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
 
@@ -29,6 +29,22 @@ export async function parseYamlDocument(yaml: string): Promise<ParseResponse> {
 
 export async function validateYamlDocument(yaml: string): Promise<ValidateResponse> {
   return request<ValidateResponse>('/validate', {
+    method: 'POST',
+    headers: JSON_HEADERS,
+    body: JSON.stringify({ yaml }),
+  });
+}
+
+export async function saveYamlDocument(yaml: string, documentName?: string): Promise<SaveResponse> {
+  return request<SaveResponse>('/save', {
+    method: 'POST',
+    headers: JSON_HEADERS,
+    body: JSON.stringify({ yaml, document_name: documentName }),
+  });
+}
+
+export async function fetchVariables(yaml: string): Promise<VariablesResponse> {
+  return request<VariablesResponse>('/variables', {
     method: 'POST',
     headers: JSON_HEADERS,
     body: JSON.stringify({ yaml }),

@@ -106,7 +106,7 @@ export function PropertiesPanel({ block }: PropertiesPanelProps): JSX.Element {
         </div>
       </section>
 
-      {block.metadata.orderItems.length > 0 && (
+      {block.metadata.orderItems && block.metadata.orderItems.length > 0 && (
         <section className="space-y-2">
           <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Order Items</h4>
           <div className="space-y-2">

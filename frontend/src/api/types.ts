@@ -70,3 +70,23 @@ export interface ValidateResponse {
   issues: ValidationIssue[];
   valid: boolean;
 }
+
+export interface SaveRequest {
+  yaml: string;
+  document_name?: string;
+}
+
+export interface SaveResponse {
+  document_name: string;
+  saved_path: string;
+  bytes_written: number;
+}
+
+export interface VariableInfo {
+  name: string;
+  type: string;
+}
+
+export interface VariablesResponse {
+  variables: VariableInfo[];
+}

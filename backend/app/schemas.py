@@ -36,3 +36,23 @@ class ValidateRequest(BaseModel):
 class ValidateResponse(BaseModel):
   issues: list[ValidationIssue]
   valid: bool
+
+
+class SaveRequest(BaseModel):
+  yaml: str
+  document_name: str | None = Field(default=None, description="Preferred file name for the YAML document")
+
+
+class SaveResponse(BaseModel):
+  document_name: str
+  saved_path: str
+  bytes_written: int
+
+
+class VariableInfo(BaseModel):
+  name: str
+  type: str
+
+
+class VariablesResponse(BaseModel):
+  variables: list[VariableInfo]
