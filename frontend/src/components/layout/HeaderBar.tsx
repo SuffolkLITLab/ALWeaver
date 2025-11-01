@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { Loader2, ShieldCheck, ShieldAlert, CircleAlert, FileText, FileUp, Save } from 'lucide-react';
+import { Loader2, ShieldCheck, ShieldAlert, CircleAlert, FileText, FileUp, Save, ServerCog } from 'lucide-react';
 import { validateYamlDocument } from '@/api/client';
 import { useEditorStore } from '@/state/editorStore';
 import { Badge } from '../common/Badge';
 import { Button } from '../common/Button';
+import { DocassembleSettingsModal } from '../common/DocassembleSettingsModal';
+import { loadDocassembleConfig, saveDocassembleConfig, type DocassembleConfig } from '@/utils/docassembleConfig';
 
 function ensureYamlFilename(name: string): string {
   const trimmed = name.trim();
@@ -18,6 +20,8 @@ function ensureYamlFilename(name: string): string {
 
 export function HeaderBar(): JSX.Element {
   const [isManualValidating, setManualValidating] = useState(false);
+  const [isDocassembleModalOpen, setDocassembleModalOpen] = useState(false);
+  const [docassembleConfig, setDocassembleConfig] = useState<DocassembleConfig | null>(() => loadDocassembleConfig());
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -162,83 +166,105 @@ export function HeaderBar(): JSX.Element {
     }
   }, [documentName, setDocumentName, yamlDocument]);
 
+  const handleDocassembleSave = useCallback((config: DocassembleConfig) => {
+    saveDocassembleConfig(config);
+    setDocassembleConfig(config);
+    setDocassembleModalOpen(false);
+  }, []);
+
   const StatusIcon = validationStatus.icon;
   const isYamlView = activeView === 'yaml';
   const isSaving = saveStatus === 'saving';
 
   return (
-    <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-border bg-surface px-6">
-      <div className="flex items-center gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Active Interview</p>
-          <p className="text-lg font-semibold text-text-primary">{documentName}</p>
+    <>
+      <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-border bg-surface px-6">
+        <div className="flex items-center gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Active Interview</p>
+            <p className="text-lg font-semibold text-text-primary">{documentName}</p>
+          </div>
+          <Badge tone={validationStatus.tone} className="flex items-center gap-1">
+            <StatusIcon className={validation.status === 'loading' ? 'animate-spin h-3.5 w-3.5' : 'h-3.5 w-3.5'} />
+            <span>{validationStatus.label}</span>
+          </Badge>
         </div>
-        <Badge tone={validationStatus.tone} className="flex items-center gap-1">
-          <StatusIcon className={validation.status === 'loading' ? 'animate-spin h-3.5 w-3.5' : 'h-3.5 w-3.5'} />
-          <span>{validationStatus.label}</span>
-        </Badge>
-      </div>
 
-      <div className="flex flex-col items-end gap-1">
-        <div className="flex items-center gap-3">
-          <Button variant="secondary" size="sm" onClick={handleToggleView}>
-            {isYamlView ? 'Visual Editor' : 'YAML Editor'}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            leftIcon={<FileUp className="h-4 w-4" />}
-            onClick={handleUploadClick}
-          >
-            Upload YAML
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            leftIcon={<FileText className="h-4 w-4" />}
-            onClick={handleOpenValidation}
-            disabled={isYamlView}
-          >
-            YAML Preview
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={handleSaveDocument}
-            disabled={isSaving || !yamlDocument.trim()}
-            leftIcon={
-              isSaving ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4" />
-              )
-            }
-          >
-            {saveStatus === 'success' ? 'Saved' : 'Save YAML'}
-          </Button>
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={handleRunValidation}
-            disabled={isBusy || !yamlDocument.trim()}
-            leftIcon={
-              isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />
-            }
-          >
-            Run Validation
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".yaml,.yml"
-            className="hidden"
-            onChange={handleFileChange}
-          />
+        <div className="flex flex-col items-end gap-1">
+          <div className="flex items-center gap-3">
+            <Button variant="secondary" size="sm" onClick={handleToggleView}>
+              {isYamlView ? 'Visual Editor' : 'YAML Editor'}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              leftIcon={<FileUp className="h-4 w-4" />}
+              onClick={handleUploadClick}
+            >
+              Upload YAML
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              leftIcon={<FileText className="h-4 w-4" />}
+              onClick={handleOpenValidation}
+              disabled={isYamlView}
+            >
+              YAML Preview
+            </Button>
+            <Button
+              variant={docassembleConfig ? 'secondary' : 'ghost'}
+              size="sm"
+              leftIcon={<ServerCog className="h-4 w-4" />}
+              onClick={() => setDocassembleModalOpen(true)}
+            >
+              {docassembleConfig ? 'Docassemble Connected' : 'Connect Docassemble'}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={handleSaveDocument}
+              disabled={isSaving || !yamlDocument.trim()}
+              leftIcon={
+                isSaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )
+              }
+            >
+              {saveStatus === 'success' ? 'Saved' : 'Save YAML'}
+            </Button>
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={handleRunValidation}
+              disabled={isBusy || !yamlDocument.trim()}
+              leftIcon={
+                isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />
+              }
+            >
+              Run Validation
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".yaml,.yml"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
+          {saveMessage && (
+            <p className={`text-xs ${saveStatus === 'error' ? 'text-danger' : 'text-text-muted'}`}>{saveMessage}</p>
+          )}
         </div>
-        {saveMessage && (
-          <p className={`text-xs ${saveStatus === 'error' ? 'text-danger' : 'text-text-muted'}`}>{saveMessage}</p>
-        )}
-      </div>
-    </header>
+      </header>
+      <DocassembleSettingsModal
+        open={isDocassembleModalOpen}
+        initialConfig={docassembleConfig}
+        onClose={() => setDocassembleModalOpen(false)}
+        onSave={handleDocassembleSave}
+      />
+    </>
   );
 }
