@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent } from 'react';
 import { X } from 'lucide-react';
 import { clsx } from 'clsx';
-import { fetchVariables } from '@/api/client';
+import { useDocassembleStore } from '@/state/docassembleStore';
+import { fetchPlaygroundVariables } from '@/api/docassemble';
 import type { VariableInfo } from '@/api/types';
 import { Button } from './Button';
 
@@ -21,11 +22,15 @@ export interface MakoExpressionModalProps {
 export function MakoExpressionModal({
   open,
   type,
-  yamlDocument,
+  yamlDocument: _yamlDocument,
   initialExpression,
   onClose,
   onSubmit,
 }: MakoExpressionModalProps): JSX.Element | null {
+  void _yamlDocument;
+  const docassembleConfig = useDocassembleStore((state) => state.config);
+  const selectedProject = useDocassembleStore((state) => state.selectedProject);
+  const selectedFilename = useDocassembleStore((state) => state.selectedFilename);
   const [expression, setExpression] = useState(initialExpression ?? '');
   const [mode, setMode] = useState<BuilderMode>('builder');
   const [variables, setVariables] = useState<VariableInfo[]>([]);
@@ -50,20 +55,29 @@ export function MakoExpressionModal({
     if (!open) {
       return;
     }
+
+    if (!docassembleConfig || !selectedProject || !selectedFilename) {
+      setIsLoading(false);
+      setVariables([]);
+      setError('Connect to Docassemble and load an interview to browse variables.');
+      return;
+    }
+
     let cancelled = false;
     setIsLoading(true);
     setError(null);
 
-    fetchVariables(yamlDocument)
-      .then((response) => {
+    fetchPlaygroundVariables(docassembleConfig, selectedProject, selectedFilename)
+      .then((items) => {
         if (!cancelled) {
-          setVariables(response.variables ?? []);
+          setVariables(items ?? []);
           setIsLoading(false);
         }
       })
       .catch((err: Error) => {
         if (!cancelled) {
-          setError(err.message || 'Unable to load variables');
+          setVariables([]);
+          setError(err.message || 'Unable to load variables from Docassemble.');
           setIsLoading(false);
         }
       });
@@ -71,7 +85,7 @@ export function MakoExpressionModal({
     return () => {
       cancelled = true;
     };
-  }, [open, yamlDocument]);
+  }, [docassembleConfig, open, selectedFilename, selectedProject]);
 
   useEffect(() => {
     if (!equalityHelper) {

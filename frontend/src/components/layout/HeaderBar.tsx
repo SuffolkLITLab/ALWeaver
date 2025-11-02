@@ -1,12 +1,32 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { Loader2, ShieldCheck, ShieldAlert, CircleAlert, FileText, FileUp, Save, ServerCog } from 'lucide-react';
+import {
+  Loader2,
+  ShieldCheck,
+  ShieldAlert,
+  CircleAlert,
+  FileText,
+  FileUp,
+  Save,
+  ServerCog,
+  CloudUpload,
+} from 'lucide-react';
 import { validateYamlDocument } from '@/api/client';
 import { useEditorStore } from '@/state/editorStore';
 import { Badge } from '../common/Badge';
 import { Button } from '../common/Button';
 import { DocassembleSettingsModal } from '../common/DocassembleSettingsModal';
-import { loadDocassembleConfig, saveDocassembleConfig, type DocassembleConfig } from '@/utils/docassembleConfig';
+import { useDocassembleStore } from '@/state/docassembleStore';
+import { uploadPlaygroundFile, fetchDocassembleUser } from '@/api/docassemble';
+
+const DEFAULT_DOCASSEMBLE_PROJECT = 'default';
+
+const formatDocassembleProject = (project?: string | null): string => {
+  if (!project || project === DEFAULT_DOCASSEMBLE_PROJECT) {
+    return 'default';
+  }
+  return project;
+};
 
 function ensureYamlFilename(name: string): string {
   const trimmed = name.trim();
@@ -21,7 +41,10 @@ function ensureYamlFilename(name: string): string {
 export function HeaderBar(): JSX.Element {
   const [isManualValidating, setManualValidating] = useState(false);
   const [isDocassembleModalOpen, setDocassembleModalOpen] = useState(false);
-  const [docassembleConfig, setDocassembleConfig] = useState<DocassembleConfig | null>(() => loadDocassembleConfig());
+  const docassembleConfig = useDocassembleStore((state) => state.config);
+  const selectedDocassembleProject = useDocassembleStore((state) => state.selectedProject);
+  const selectedDocassembleFilename = useDocassembleStore((state) => state.selectedFilename);
+  const updateDocassembleConfig = useDocassembleStore((state) => state.updateConfig);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -38,14 +61,53 @@ export function HeaderBar(): JSX.Element {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [saveMessage, setSaveMessage] = useState<string | undefined>();
   const saveResetTimeout = useRef<number | undefined>(undefined);
+  const [docassembleSaveStatus, setDocassembleSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+  const [docassembleSaveMessage, setDocassembleSaveMessage] = useState<string | undefined>();
+  const docassembleSaveTimeout = useRef<number | undefined>(undefined);
+  const fetchedUserInfoRef = useRef(false);
 
   useEffect(() => {
     return () => {
       if (saveResetTimeout.current !== undefined) {
         window.clearTimeout(saveResetTimeout.current);
       }
+      if (docassembleSaveTimeout.current !== undefined) {
+        window.clearTimeout(docassembleSaveTimeout.current);
+      }
     };
   }, []);
+
+  useEffect(() => {
+    fetchedUserInfoRef.current = false;
+  }, [docassembleConfig?.serverUrl, docassembleConfig?.apiKey]);
+
+  useEffect(() => {
+    if (!docassembleConfig || docassembleConfig.userId !== undefined || fetchedUserInfoRef.current) {
+      return;
+    }
+
+    fetchedUserInfoRef.current = true;
+    let cancelled = false;
+
+    fetchDocassembleUser(docassembleConfig)
+      .then((user) => {
+        if (cancelled) {
+          return;
+        }
+        updateDocassembleConfig({
+          userId: user.id,
+          userName: user.first_name,
+          userEmail: user.email,
+        });
+      })
+      .catch(() => {
+        // Best-effort background fetch; surface errors in the settings modal instead.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [docassembleConfig, updateDocassembleConfig]);
 
   const validationStatus = useMemo(() => {
     switch (validation.status) {
@@ -166,15 +228,59 @@ export function HeaderBar(): JSX.Element {
     }
   }, [documentName, setDocumentName, yamlDocument]);
 
-  const handleDocassembleSave = useCallback((config: DocassembleConfig) => {
-    saveDocassembleConfig(config);
-    setDocassembleConfig(config);
-    setDocassembleModalOpen(false);
-  }, []);
+  const canSaveToDocassemble =
+    Boolean(docassembleConfig) &&
+    Boolean(selectedDocassembleProject) &&
+    Boolean(selectedDocassembleFilename) &&
+    Boolean(yamlDocument.trim());
+
+  const handleSaveToDocassemble = useCallback(async () => {
+    if (!docassembleConfig || !selectedDocassembleProject || !selectedDocassembleFilename) {
+      setDocassembleSaveStatus('error');
+      setDocassembleSaveMessage('Select a Docassemble project and interview before saving.');
+      return;
+    }
+
+    if (docassembleSaveTimeout.current !== undefined) {
+      window.clearTimeout(docassembleSaveTimeout.current);
+      docassembleSaveTimeout.current = undefined;
+    }
+
+    setDocassembleSaveStatus('saving');
+    setDocassembleSaveMessage(undefined);
+
+    try {
+      const result = await uploadPlaygroundFile(
+        docassembleConfig,
+        selectedDocassembleProject,
+        selectedDocassembleFilename,
+        yamlDocument,
+      );
+      const projectLabel = formatDocassembleProject(selectedDocassembleProject);
+      const taskNote = result.taskId ? ` (restart task ${result.taskId})` : '';
+      setDocassembleSaveStatus('success');
+      setDocassembleSaveMessage(`Uploaded ${selectedDocassembleFilename} to ${projectLabel}${taskNote}.`);
+      docassembleSaveTimeout.current = window.setTimeout(() => {
+        setDocassembleSaveStatus('idle');
+        setDocassembleSaveMessage(undefined);
+        docassembleSaveTimeout.current = undefined;
+      }, 3200);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Unable to upload the interview to Docassemble.';
+      setDocassembleSaveStatus('error');
+      setDocassembleSaveMessage(message);
+    }
+  }, [docassembleConfig, selectedDocassembleFilename, selectedDocassembleProject, yamlDocument]);
 
   const StatusIcon = validationStatus.icon;
   const isYamlView = activeView === 'yaml';
   const isSaving = saveStatus === 'saving';
+  const docassembleButtonLabel = docassembleConfig
+    ? selectedDocassembleFilename
+      ? `${formatDocassembleProject(selectedDocassembleProject)} / ${selectedDocassembleFilename}`
+      : 'Docassemble Connected'
+    : 'Connect Docassemble';
 
   return (
     <>
@@ -218,7 +324,22 @@ export function HeaderBar(): JSX.Element {
               leftIcon={<ServerCog className="h-4 w-4" />}
               onClick={() => setDocassembleModalOpen(true)}
             >
-              {docassembleConfig ? 'Docassemble Connected' : 'Connect Docassemble'}
+              {docassembleButtonLabel}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={handleSaveToDocassemble}
+              disabled={!canSaveToDocassemble || docassembleSaveStatus === 'saving'}
+              leftIcon={
+                docassembleSaveStatus === 'saving' ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CloudUpload className="h-4 w-4" />
+                )
+              }
+            >
+              {docassembleSaveStatus === 'success' ? 'Saved to Docassemble' : 'Save to Docassemble'}
             </Button>
             <Button
               size="sm"
@@ -257,13 +378,20 @@ export function HeaderBar(): JSX.Element {
           {saveMessage && (
             <p className={`text-xs ${saveStatus === 'error' ? 'text-danger' : 'text-text-muted'}`}>{saveMessage}</p>
           )}
+          {docassembleSaveMessage && (
+            <p
+              className={`text-xs ${
+                docassembleSaveStatus === 'error' ? 'text-danger' : 'text-text-muted'
+              }`}
+            >
+              {docassembleSaveMessage}
+            </p>
+          )}
         </div>
       </header>
       <DocassembleSettingsModal
         open={isDocassembleModalOpen}
-        initialConfig={docassembleConfig}
         onClose={() => setDocassembleModalOpen(false)}
-        onSave={handleDocassembleSave}
       />
     </>
   );
