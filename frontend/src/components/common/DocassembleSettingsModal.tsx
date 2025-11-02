@@ -59,6 +59,8 @@ export function DocassembleSettingsModal({ open, onClose }: DocassembleSettingsM
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const resetTimerRef = useRef<number | undefined>(undefined);
+  const pendingProjectRef = useRef<string>(DEFAULT_PROJECT);
+  const pendingFilenameRef = useRef<string>('');
 
   useEffect(() => {
     if (!open) {
@@ -74,6 +76,14 @@ export function DocassembleSettingsModal({ open, onClose }: DocassembleSettingsM
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [open, onClose]);
+
+  useEffect(() => {
+    pendingProjectRef.current = pendingProject;
+  }, [pendingProject]);
+
+  useEffect(() => {
+    pendingFilenameRef.current = pendingFilename;
+  }, [pendingFilename]);
 
   useEffect(() => {
     return () => {
@@ -141,7 +151,7 @@ export function DocassembleSettingsModal({ open, onClose }: DocassembleSettingsM
   );
 
   const loadProjects = useCallback(
-    async (options?: { preserveSelection?: boolean }) => {
+    async (options?: { preserveSelection?: boolean; projectHint?: string; filenameHint?: string }) => {
       if (!config) {
         return;
       }
@@ -152,15 +162,18 @@ export function DocassembleSettingsModal({ open, onClose }: DocassembleSettingsM
         const list = await fetchPlaygroundProjects(config);
         setProjects(list);
         const preferredProject = options?.preserveSelection
-          ? pendingProject
-          : config.project && list.includes(config.project)
-            ? config.project
-            : activeProject && list.includes(activeProject)
-              ? activeProject
-              : list[0] ?? DEFAULT_PROJECT;
+          ? pendingProjectRef.current
+          : (options?.projectHint && list.includes(options.projectHint)
+              ? options.projectHint
+              : config.project && list.includes(config.project)
+                ? config.project
+                : list[0]) ?? DEFAULT_PROJECT;
         const normalizedProject = preferredProject || DEFAULT_PROJECT;
         setPendingProject(normalizedProject);
-        await loadFiles(normalizedProject, options?.preserveSelection ? pendingFilename : config.filename);
+        const desiredFilename = options?.preserveSelection
+          ? pendingFilenameRef.current
+          : options?.filenameHint ?? config.filename;
+        await loadFiles(normalizedProject, desiredFilename);
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'Unable to load Docassemble projects. Check your connection.';
@@ -172,7 +185,7 @@ export function DocassembleSettingsModal({ open, onClose }: DocassembleSettingsM
         setProjectsStatus('idle');
       }
     },
-    [activeProject, config, ensureUserInfo, loadFiles, pendingFilename, pendingProject],
+    [config, ensureUserInfo, loadFiles],
   );
 
   useEffect(() => {
@@ -190,13 +203,14 @@ export function DocassembleSettingsModal({ open, onClose }: DocassembleSettingsM
     setProjectsError(null);
     setLoadMessage(null);
     setLoadError(null);
-    const nextProject = normalizeProjectForDisplay(config?.project ?? activeProject ?? DEFAULT_PROJECT);
+    const projectHint = config?.project ?? activeProject ?? DEFAULT_PROJECT;
+    const nextProject = normalizeProjectForDisplay(projectHint);
     setPendingProject(nextProject);
     setPendingFilename(config?.filename ?? activeFilename ?? '');
     if (!config) {
       return;
     }
-    void loadProjects();
+    void loadProjects({ projectHint, filenameHint: config.filename ?? activeFilename ?? '' });
   }, [activeFilename, activeProject, config, loadProjects, open]);
 
   useEffect(() => {
