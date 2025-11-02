@@ -3,6 +3,7 @@ import type { EditorBlock } from '@/state/types';
 import { QuestionEditor } from './QuestionEditor';
 import { YamlBlockEditor } from './YamlBlockEditor';
 import { StringListBlockEditor } from './StringListBlockEditor';
+import { FeaturesBlockEditor } from './FeaturesBlockEditor';
 
 interface BlockPreviewProps {
   block: EditorBlock;
@@ -109,6 +110,8 @@ export function BlockPreview({ block }: BlockPreviewProps): JSX.Element {
       return <CodePreview block={block} />;
     case 'attachment':
       return <AttachmentPreview block={block} />;
+    case 'features':
+      return <FeaturesBlockEditor block={block} />;
     default:
       return <YamlBlockEditor block={block} />;
   }
