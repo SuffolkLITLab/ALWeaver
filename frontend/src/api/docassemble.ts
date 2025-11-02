@@ -113,6 +113,26 @@ export async function fetchPlaygroundFiles(config: DocassembleConfig, project?: 
     .sort((a, b) => a.localeCompare(b));
 }
 
+const SOURCE_FILE_EXTENSIONS = ['.xlsx', '.xls', '.xliff', '.xlf', '.yaml', '.yml'];
+
+export async function fetchPlaygroundSourceFiles(config: DocassembleConfig, project?: string): Promise<string[]> {
+  const normalizedProject = normalizeProject(project);
+  const files = await requestJson<string[]>(config, '/api/playground', {
+    folder: 'sources',
+    project: normalizedProject,
+  });
+  if (!Array.isArray(files)) {
+    return [];
+  }
+  return files
+    .filter((name) => typeof name === 'string')
+    .filter((name) => {
+      const lower = name.toLowerCase();
+      return SOURCE_FILE_EXTENSIONS.some((extension) => lower.endsWith(extension));
+    })
+    .sort((a, b) => a.localeCompare(b));
+}
+
 export async function downloadPlaygroundFile(
   config: DocassembleConfig,
   project: string,

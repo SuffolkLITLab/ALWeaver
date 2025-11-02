@@ -2,6 +2,7 @@ pyproject.toml
 app/__init__.py
 app/main.py
 app/schemas.py
+app/services/storage.py
 app/services/yaml_parser.py
 docassemble_editor_backend.egg-info/PKG-INFO
 docassemble_editor_backend.egg-info/SOURCES.txt

@@ -1,6 +1,8 @@
+import type { BlockType } from '@/api/types';
 import type { EditorBlock } from '@/state/types';
 import { QuestionEditor } from './QuestionEditor';
 import { YamlBlockEditor } from './YamlBlockEditor';
+import { StringListBlockEditor } from './StringListBlockEditor';
 
 interface BlockPreviewProps {
   block: EditorBlock;
@@ -81,9 +83,22 @@ function InterviewOrderPreview({ block }: BlockPreviewProps): JSX.Element {
     </div>
   );
 }
+
+const STRING_LIST_TYPES: BlockType[] = ['include', 'translations'];
+
+function isStringListBlock(block: EditorBlock): boolean {
+  if (!STRING_LIST_TYPES.includes(block.type)) {
+    return false;
+  }
+  const rawData = (block.metadata.rawData ?? {}) as Record<string, unknown>;
+  return Array.isArray(rawData[block.type]);
+}
 export function BlockPreview({ block }: BlockPreviewProps): JSX.Element {
   if (block.metadata.isInterviewOrder) {
     return <InterviewOrderPreview block={block} />;
+  }
+  if (isStringListBlock(block)) {
+    return <StringListBlockEditor block={block} />;
   }
   switch (block.type) {
     case 'metadata':
