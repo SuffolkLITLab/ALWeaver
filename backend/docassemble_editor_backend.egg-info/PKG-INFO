@@ -8,6 +8,7 @@ Requires-Dist: fastapi>=0.115.0
 Requires-Dist: uvicorn[standard]>=0.30.0
 Requires-Dist: pydantic>=2.9.0
 Requires-Dist: ruamel.yaml>=0.18.10
+Requires-Dist: dayamlchecker
 Requires-Dist: httpx>=0.27.0
 Provides-Extra: dev
 Requires-Dist: pytest>=8.3.0; extra == "dev"
