@@ -5,6 +5,7 @@ import { YamlBlockEditor } from './YamlBlockEditor';
 import { StringListBlockEditor } from './StringListBlockEditor';
 import { FeaturesBlockEditor } from './FeaturesBlockEditor';
 import { MetadataBlockEditor } from './MetadataBlockEditor';
+import { AttachmentBlockEditor } from './AttachmentBlockEditor';
 
 interface BlockPreviewProps {
   block: EditorBlock;
@@ -16,34 +17,6 @@ function CodePreview({ block }: BlockPreviewProps): JSX.Element {
     <pre className="max-h-72 overflow-auto rounded-xl bg-[#0f172a] px-4 py-3 font-mono text-xs text-slate-100">
       {typeof payload === 'string' ? payload : block.raw}
     </pre>
-  );
-}
-
-function AttachmentPreview({ block }: BlockPreviewProps): JSX.Element {
-  const attachment = (block.metadata.rawData?.attachment ?? {}) as Record<string, unknown>;
-  return (
-    <div className="space-y-3">
-      <div className="rounded-xl bg-muted px-3 py-2 text-sm text-text-primary">
-        <span className="font-semibold">{attachment.name ?? 'Untitled attachment'}</span>
-        {attachment.filename && (
-          <span className="ml-2 text-xs text-text-muted">({attachment.filename as string})</span>
-        )}
-      </div>
-      {Array.isArray(attachment['valid formats']) && (
-        <div className="flex flex-wrap gap-2 text-xs text-text-muted">
-          {(attachment['valid formats'] as unknown[]).map((item, index) => (
-            <span key={index} className="rounded-full bg-muted px-3 py-1">
-              {String(item)}
-            </span>
-          ))}
-        </div>
-      )}
-      {typeof attachment.content === 'string' && (
-        <pre className="max-h-52 overflow-auto rounded-xl border border-border bg-surface px-3 py-2 text-xs">
-          {attachment.content}
-        </pre>
-      )}
-    </div>
   );
 }
 
@@ -89,7 +62,7 @@ export function BlockPreview({ block }: BlockPreviewProps): JSX.Element {
     case 'code':
       return <CodePreview block={block} />;
     case 'attachment':
-      return <AttachmentPreview block={block} />;
+      return <AttachmentBlockEditor block={block} />;
     case 'features':
       return <FeaturesBlockEditor block={block} />;
     default:
