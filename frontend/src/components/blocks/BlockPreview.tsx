@@ -4,30 +4,10 @@ import { QuestionEditor } from './QuestionEditor';
 import { YamlBlockEditor } from './YamlBlockEditor';
 import { StringListBlockEditor } from './StringListBlockEditor';
 import { FeaturesBlockEditor } from './FeaturesBlockEditor';
+import { MetadataBlockEditor } from './MetadataBlockEditor';
 
 interface BlockPreviewProps {
   block: EditorBlock;
-}
-
-function MetadataPreview({ block }: BlockPreviewProps): JSX.Element {
-  const metadata = (block.metadata.rawData?.metadata ?? {}) as Record<string, unknown>;
-  const entries = Object.entries(metadata);
-  return (
-    <div className="space-y-2">
-      {entries.length === 0 ? (
-        <p className="text-sm text-text-muted">No metadata values defined.</p>
-      ) : (
-        entries.map(([key, value]) => (
-          <div key={key} className="flex items-start justify-between gap-4 rounded-xl bg-muted px-3 py-2">
-            <span className="text-xs font-medium uppercase tracking-wide text-text-muted">{key}</span>
-            <span className="text-sm text-text-primary">
-              {typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
-            </span>
-          </div>
-        ))
-      )}
-    </div>
-  );
 }
 
 function CodePreview({ block }: BlockPreviewProps): JSX.Element {
@@ -103,7 +83,7 @@ export function BlockPreview({ block }: BlockPreviewProps): JSX.Element {
   }
   switch (block.type) {
     case 'metadata':
-      return <MetadataPreview block={block} />;
+      return <MetadataBlockEditor block={block} />;
     case 'question':
       return <QuestionEditor block={block} />;
     case 'code':
