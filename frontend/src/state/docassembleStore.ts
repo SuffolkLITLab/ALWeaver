@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { useEditorStore } from './editorStore';
+import type { PlaygroundFolder } from '@/api/docassemble';
 import type { DocassembleConfig } from '@/utils/docassembleConfig';
 import { loadDocassembleConfig, saveDocassembleConfig, clearDocassembleConfig } from '@/utils/docassembleConfig';
 
@@ -6,6 +8,7 @@ export interface DocassembleStoreState {
   config: DocassembleConfig | null;
   selectedProject?: string;
   selectedFilename?: string;
+  selectedFolder: PlaygroundFolder;
 }
 
 export interface DocassembleStoreActions {
@@ -14,6 +17,7 @@ export interface DocassembleStoreActions {
   clearConfig: () => void;
   setSelectedProject: (project?: string) => void;
   setSelectedFilename: (filename?: string) => void;
+  setSelectedFolder: (folder: PlaygroundFolder) => void;
 }
 
 export type DocassembleStore = DocassembleStoreState & DocassembleStoreActions;
@@ -24,6 +28,7 @@ export const useDocassembleStore = create<DocassembleStore>((set, get) => ({
   config: initialConfig,
   selectedProject: initialConfig?.project,
   selectedFilename: initialConfig?.filename,
+  selectedFolder: 'questions',
 
   setConfig: (config) => {
     const next = { ...config };
@@ -72,5 +77,19 @@ export const useDocassembleStore = create<DocassembleStore>((set, get) => ({
       return;
     }
     updateConfig({ filename });
+  },
+
+  setSelectedFolder: (folder) => {
+    const { yamlDocument, originalYaml } = useEditorStore.getState();
+    if (yamlDocument !== originalYaml) {
+      if (
+        !window.confirm(
+          'You have unsaved changes that will be lost. Are you sure you want to switch folders?'
+        )
+      ) {
+        return;
+      }
+    }
+    set({ selectedFolder: folder, selectedFilename: undefined });
   },
 }));

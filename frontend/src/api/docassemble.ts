@@ -92,24 +92,40 @@ export async function fetchDocassembleUser(config: DocassembleConfig): Promise<D
   return requestJson<DocassembleUserInfo>(config, '/api/user');
 }
 
+export type PlaygroundFolder = 'questions' | 'templates' | 'static' | 'modules';
+
+export const PLAYGROUND_FOLDERS: PlaygroundFolder[] = ['questions', 'templates', 'static', 'modules'];
+
 export async function fetchPlaygroundProjects(config: DocassembleConfig): Promise<string[]> {
   const projects = await requestJson<string[]>(config, '/api/playground/project');
   const unique = new Set<string>([DEFAULT_PROJECT_KEY, ...(Array.isArray(projects) ? projects : [])]);
   return Array.from(unique).sort((a, b) => a.localeCompare(b));
 }
 
-export async function fetchPlaygroundFiles(config: DocassembleConfig, project?: string): Promise<string[]> {
+export const PLAYGROUND_FOLDER_EXTENSIONS: Record<PlaygroundFolder, string[]> = {
+  questions: ['.yml', '.yaml'],
+  templates: ['.md', '.html', '.txt'],
+  static: ['.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg'],
+  modules: ['.py'],
+};
+
+export async function fetchPlaygroundFiles(
+  config: DocassembleConfig,
+  project?: string,
+  folder: PlaygroundFolder = 'questions',
+): Promise<string[]> {
   const normalizedProject = normalizeProject(project);
   const files = await requestJson<string[]>(config, '/api/playground', {
-    folder: 'questions',
+    folder,
     project: normalizedProject,
   });
   if (!Array.isArray(files)) {
     return [];
   }
+  const extensions = PLAYGROUND_FOLDER_EXTENSIONS[folder];
   return files
     .filter((name) => typeof name === 'string')
-    .filter((name) => /\.ya?ml$/i.test(name))
+    .filter((name) => extensions.some((ext) => name.toLowerCase().endsWith(ext)))
     .sort((a, b) => a.localeCompare(b));
 }
 
@@ -137,10 +153,11 @@ export async function downloadPlaygroundFile(
   config: DocassembleConfig,
   project: string,
   filename: string,
+  folder: PlaygroundFolder = 'questions',
 ): Promise<string> {
   const normalizedProject = normalizeProject(project);
   return requestText(config, '/api/playground', {
-    folder: 'questions',
+    folder,
     project: normalizedProject,
     filename,
   });
@@ -155,13 +172,14 @@ export async function uploadPlaygroundFile(
   project: string,
   filename: string,
   contents: string,
+  folder: PlaygroundFolder = 'questions',
 ): Promise<UploadPlaygroundResult> {
   const normalizedProject = normalizeProject(project);
   const formData = new FormData();
-  formData.append('folder', 'questions');
+  formData.append('folder', folder);
   formData.append('project', normalizedProject);
   formData.append('restart', '0');
-  formData.append('file', new Blob([contents], { type: 'text/yaml' }), filename);
+  formData.append('file', new Blob([contents], { type: 'text/plain' }), filename);
 
   const url = buildUrl(config, '/api/playground');
   const response = await fetch(url, {

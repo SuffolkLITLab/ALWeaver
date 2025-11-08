@@ -163,9 +163,36 @@ def _guess_block_type(data: dict) -> str:
     return 'code'
 
 
-def _label_for_block(block_type: str, data: dict) -> str | None:
+def _label_for_block(block_type: str, data: dict, raw_chunk: str = '') -> str | None:
     if isinstance(data.get('interview_order'), dict):
         return 'Interview Order'
+    
+    # Check for interview order patterns in code blocks
+    if block_type == 'code':
+        block_id = data.get('id', '')
+        code_content = data.get('code', '')
+        
+        # Normalize block_id for comparison
+        id_normalized = str(block_id).lower().strip() if block_id else ''
+        
+        # Check id patterns - exact match or contains "interview_order" or "main_order"
+        if (id_normalized == 'interview order' or 
+            id_normalized == 'interview_order' or 
+            'interview_order' in id_normalized or 
+            id_normalized == 'main_order' or
+            'main_order' in id_normalized):
+            return 'Interview Order'
+        
+        # Check for special YAML comment pattern in the raw chunk
+        import re
+        if re.search(r'#+\s*interview\s+order\s*#+', raw_chunk, re.IGNORECASE):
+            return 'Interview Order'
+        
+        # Check for special comment pattern in code (legacy)
+        if isinstance(code_content, str):
+            if re.search(r'#+\s*interview\s+order\s*#+', code_content, re.IGNORECASE):
+                return 'Interview Order'
+    
     if block_type == 'metadata':
         meta = data.get('metadata') or {}
         return f"{meta.get('title')}" if meta.get('title') else 'Metadata'
@@ -200,7 +227,7 @@ def analyze_blocks(document: str) -> list[BlockAnalysis]:
             raise ValueError(f'Failed to parse YAML segment at index {position}: {exc}') from exc
 
         block_type = _guess_block_type(data)
-        label = _label_for_block(block_type, data)
+        label = _label_for_block(block_type, data, chunk)  # Pass raw chunk for comment detection
         order_items: list[str] = []
 
         interview_order_payload = data.get('interview_order')
@@ -368,3 +395,59 @@ def extract_variables(document: str) -> list[dict[str, str]]:
 
     result = [{'name': name, 'type': type_} for name, type_ in variables.items()]
     return sorted(result, key=lambda v: v['name'])
+
+
+def extract_first_fields(document: str) -> list[dict[str, Any]]:
+    """
+    Extracts the first field from each question block for use in interview order suggestions.
+    Also detects if the field uses list iterators like [i], [j], etc. and suggests .gather() instead.
+    Returns a list of dicts with 'field', 'question_id', 'is_list', 'list_name'.
+    """
+    first_fields = []
+    all_blocks = list(iter_blocks(document))
+    
+    import re
+    
+    for block in all_blocks:
+        # Only process question blocks with fields
+        if 'fields' not in block or not isinstance(block['fields'], list) or len(block['fields']) == 0:
+            continue
+        
+        question_id = block.get('id', '')
+        first_field_data = block['fields'][0]
+        
+        if not isinstance(first_field_data, dict) or not first_field_data:
+            continue
+        
+        # Get the first key which should be the field label or variable
+        first_key = next(iter(first_field_data))
+        variable_name = first_field_data[first_key]
+        
+        if not isinstance(variable_name, str):
+            continue
+        
+        # Check for list iterators like [i], [j], [k], etc.
+        iterator_pattern = re.compile(r'^(\w+(?:\.\w+)*)\[([ijkn])\](?:\.(\w+(?:\.\w+)*))?$')
+        match = iterator_pattern.match(variable_name)
+        
+        if match:
+            # This is a list with iterator, suggest .gather() instead
+            list_name = match.group(1)
+            first_fields.append({
+                'field': variable_name,
+                'question_id': question_id,
+                'is_list': True,
+                'list_name': list_name,
+                'suggestion': f'{list_name}.gather()',
+            })
+        else:
+            # Regular field
+            first_fields.append({
+                'field': variable_name,
+                'question_id': question_id,
+                'is_list': False,
+                'list_name': None,
+                'suggestion': variable_name,
+            })
+    
+    return first_fields
