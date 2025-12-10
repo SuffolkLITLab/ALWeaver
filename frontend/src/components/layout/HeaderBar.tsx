@@ -20,6 +20,7 @@ import { Button } from '../common/Button';
 import { ToggleButton } from '../common/ToggleButton';
 import { StatusToast } from '../common/StatusToast';
 import { DocassembleSettingsModal } from '../common/DocassembleSettingsModal';
+import { OverflowMenu, type OverflowMenuItem } from '../common/OverflowMenu';
 import { useDocassembleStore } from '@/state/docassembleStore';
 import { uploadPlaygroundFile, fetchDocassembleUser, PLAYGROUND_FOLDERS, type PlaygroundFolder, PLAYGROUND_FOLDER_EXTENSIONS } from '@/api/docassemble';
 
@@ -302,6 +303,37 @@ export function HeaderBar(): JSX.Element {
     setDocassembleSaveMessage(undefined);
   }, []);
 
+  // Build overflow menu items
+  const overflowMenuItems: OverflowMenuItem[] = [
+    {
+      id: 'upload',
+      label: 'Upload',
+      icon: <FileUp className="h-4 w-4" />,
+      onClick: handleUploadClick,
+    },
+    {
+      id: 'preview',
+      label: 'Preview',
+      icon: <FileText className="h-4 w-4" />,
+      onClick: handleOpenValidation,
+      disabled: isYamlView,
+    },
+    {
+      id: 'docassemble',
+      label: 'Docassemble Settings',
+      icon: <ServerCog className="h-4 w-4" />,
+      onClick: () => setDocassembleModalOpen(true),
+    },
+    {
+      id: 'docassemble-upload',
+      label: 'Upload to Docassemble',
+      icon: <CloudUpload className="h-4 w-4" />,
+      onClick: handleSaveToDocassemble,
+      disabled: !canSaveToDocassemble || docassembleSaveStatus === 'saving',
+      variant: 'secondary',
+    },
+  ];
+
   return (
     <>
       <header className="flex h-14 flex-shrink-0 items-center justify-between border-b border-border bg-surface px-4">
@@ -338,30 +370,34 @@ export function HeaderBar(): JSX.Element {
             value={activeView}
             onChange={(v) => setActiveView(v as 'visual' | 'yaml')}
           />
-          <Button
-            variant="ghost"
-            size="sm"
-            leftIcon={<FileUp className="h-3.5 w-3.5" />}
-            onClick={handleUploadClick}
-          >
-            Upload
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            leftIcon={<FileText className="h-3.5 w-3.5" />}
-            onClick={handleOpenValidation}
-            disabled={isYamlView}
-          >
-            Preview
-          </Button>
+          {/* Buttons visible on larger screens */}
+          <div className="hidden sm:flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              leftIcon={<FileUp className="h-3.5 w-3.5" />}
+              onClick={handleUploadClick}
+            >
+              Upload
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              leftIcon={<FileText className="h-3.5 w-3.5" />}
+              onClick={handleOpenValidation}
+              disabled={isYamlView}
+            >
+              Preview
+            </Button>
+          </div>
+          {/* Docassemble button visible on medium+ screens, goes to menu on smaller */}
           <Button
             variant={docassembleConfig ? 'secondary' : 'ghost'}
             size="sm"
             leftIcon={<ServerCog className="h-3.5 w-3.5" />}
             onClick={() => setDocassembleModalOpen(true)}
             truncate
-            className="max-w-[160px]"
+            className="max-w-[160px] hidden md:inline-flex"
           >
             {docassembleButtonLabel}
           </Button>
@@ -377,6 +413,7 @@ export function HeaderBar(): JSX.Element {
                 <CloudUpload className="h-3.5 w-3.5" />
               )
             }
+            className="hidden lg:inline-flex"
           >
             {docassembleSaveStatus === 'success' ? 'Uploaded' : 'Upload'}
           </Button>
@@ -393,19 +430,10 @@ export function HeaderBar(): JSX.Element {
               )
             }
           >
-            {saveStatus === 'success' ? 'Saved' : 'Save'}
+            Save
           </Button>
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={handleRunValidation}
-            disabled={isBusy || !yamlDocument.trim()}
-            leftIcon={
-              isBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />
-            }
-          >
-            Validate
-          </Button>
+          {/* Overflow menu for smaller screens */}
+          <OverflowMenu items={overflowMenuItems} label="More options" />
           <input
             ref={fileInputRef}
             type="file"
