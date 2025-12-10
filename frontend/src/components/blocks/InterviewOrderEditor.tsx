@@ -18,6 +18,7 @@ import { lintInterviewOrder, getLintBadgeColor } from '@/utils/interviewOrderLin
 import { useEditorStore } from '@/state/editorStore';
 import { useDocassembleStore } from '@/state/docassembleStore';
 import { fetchPlaygroundVariables } from '@/api/docassemble';
+import { fetchVariables } from '@/api/client';
 import { CommandPalette } from './CommandPalette';
 
 interface InterviewOrderEditorProps {
@@ -36,6 +37,7 @@ export function InterviewOrderEditor({ block }: InterviewOrderEditorProps): JSX.
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editValue, setEditValue] = useState('');
   const [availableVariables, setAvailableVariables] = useState<string[]>([]);
+  const [loadingVariables, setLoadingVariables] = useState(false);
 
   const upsertBlockFromRaw = useEditorStore((state) => state.upsertBlockFromRaw);
   const yamlDocument = useEditorStore((state) => state.yamlDocument);
@@ -49,31 +51,39 @@ export function InterviewOrderEditor({ block }: InterviewOrderEditorProps): JSX.
 
   // Fetch available variables when palette opens
   useEffect(() => {
-    if (commandPaletteOpen) {
-      console.log('[InterviewOrderEditor] Command palette opened');
-      console.log('[InterviewOrderEditor] docassembleConfig:', docassembleConfig);
-      console.log('[InterviewOrderEditor] selectedProject:', selectedProject);
-      console.log('[InterviewOrderEditor] selectedFilename:', selectedFilename);
+    if (!commandPaletteOpen) return;
+    
+    const fetchAllVariables = async () => {
+      setLoadingVariables(true);
+      const variableNames = new Set<string>();
       
-      // If connected to Docassemble, use the interview data API
-      if (docassembleConfig && selectedProject !== undefined && selectedFilename) {
-        console.log('[InterviewOrderEditor] Fetching variables from Docassemble API');
-        fetchPlaygroundVariables(docassembleConfig, selectedProject, selectedFilename)
-          .then((variables) => {
-            console.log('[InterviewOrderEditor] Variables fetched from Docassemble:', variables);
-            setAvailableVariables(variables.map(v => v.name));
-          })
-          .catch((error: Error) => {
-            console.error('[InterviewOrderEditor] Failed to fetch variables from Docassemble:', error);
-          });
-      } else {
-        console.log('[InterviewOrderEditor] Not connected to Docassemble or missing project/filename');
-        console.log('[InterviewOrderEditor] Config present:', !!docassembleConfig);
-        console.log('[InterviewOrderEditor] Project set:', selectedProject !== undefined);
-        console.log('[InterviewOrderEditor] Filename set:', !!selectedFilename);
+      // Always try to fetch local variables from the YAML document
+      if (yamlDocument) {
+        try {
+          const localResponse = await fetchVariables(yamlDocument);
+          localResponse.variables.forEach(v => variableNames.add(v.name));
+        } catch (error) {
+          console.warn('[InterviewOrderEditor] Failed to fetch local variables:', error);
+        }
       }
-    }
-  }, [commandPaletteOpen, docassembleConfig, selectedProject, selectedFilename]);
+      
+      // If connected to Docassemble, also fetch remote variables
+      if (docassembleConfig && selectedProject !== undefined && selectedFilename) {
+        try {
+          const remoteVariables = await fetchPlaygroundVariables(docassembleConfig, selectedProject, selectedFilename);
+          remoteVariables.forEach(v => variableNames.add(v.name));
+        } catch (error) {
+          console.warn('[InterviewOrderEditor] Failed to fetch Docassemble variables:', error);
+        }
+      }
+      
+      // Sort and update state
+      setAvailableVariables(Array.from(variableNames).sort());
+      setLoadingVariables(false);
+    };
+    
+    fetchAllVariables();
+  }, [commandPaletteOpen, yamlDocument, docassembleConfig, selectedProject, selectedFilename]);
 
   // Initialize AST from block
   useEffect(() => {

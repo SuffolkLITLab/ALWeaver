@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { clsx } from 'clsx';
-import { Search, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, ArrowUp, ArrowDown, Loader2 } from 'lucide-react';
 import type { InterviewOrderNode } from '@/utils/interviewOrderAST';
 
 interface CommandPaletteProps {
@@ -9,6 +9,7 @@ interface CommandPaletteProps {
   onInsert: (node: InterviewOrderNode) => void;
   suggestions?: CommandSuggestion[];
   availableVariables?: string[];
+  loadingVariables?: boolean;
 }
 
 export interface CommandSuggestion {
@@ -129,7 +130,7 @@ function getDefaultSuggestions(): CommandSuggestion[] {
   ];
 }
 
-export function CommandPalette({ isOpen, onClose, onInsert, suggestions = [], availableVariables = [] }: CommandPaletteProps): JSX.Element | null {
+export function CommandPalette({ isOpen, onClose, onInsert, suggestions = [], availableVariables = [], loadingVariables = false }: CommandPaletteProps): JSX.Element | null {
   const [input, setInput] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [justOpened, setJustOpened] = useState(false);
@@ -138,14 +139,15 @@ export function CommandPalette({ isOpen, onClose, onInsert, suggestions = [], av
   // Combine default suggestions with custom ones
   const allSuggestions = [...getDefaultSuggestions(), ...suggestions];
   
-  // Check if user is typing an "ask" command
-  const isTypingAsk = input.trim().toLowerCase().startsWith('ask ');
-  const askQuery = isTypingAsk ? input.substring(4).toLowerCase() : '';
+  // Check if user is typing an "ask" command (with or without space/query)
+  const inputLower = input.trim().toLowerCase();
+  const isTypingAsk = inputLower === 'ask' || inputLower.startsWith('ask ');
+  const askQuery = inputLower.startsWith('ask ') ? input.trim().substring(4).toLowerCase() : '';
   
   // Filter variables if typing "ask", otherwise filter suggestions normally
   const variableSuggestions = isTypingAsk
     ? availableVariables
-        .filter(v => v.toLowerCase().includes(askQuery))
+        .filter(v => !askQuery || v.toLowerCase().includes(askQuery))
         .map(v => ({
           type: 'variable' as const,
           label: v,
@@ -165,21 +167,9 @@ export function CommandPalette({ isOpen, onClose, onInsert, suggestions = [], av
       );
   
   // If input looks like a complete command, add a "Use this" option
+  // But don't show it when we have variable suggestions (user likely wants to pick a variable)
   const canParseDirectly = input.trim().length > 0 && parseCommand(input) !== null;
-  const showDirectOption = canParseDirectly && filtered.length > 0;
-  
-  // Debug: log when variables change or ask mode is entered
-  useEffect(() => {
-    if (isOpen) {
-      console.log('[CommandPalette] Palette opened. availableVariables:', availableVariables);
-    }
-    if (isTypingAsk && isOpen) {
-      console.log('[CommandPalette] Ask mode. Available variables:', availableVariables);
-      console.log('[CommandPalette] Query:', askQuery);
-      console.log('[CommandPalette] Filtered suggestions:', variableSuggestions);
-      console.log('[CommandPalette] Total filtered items:', filtered.length);
-    }
-  }, [isTypingAsk, availableVariables, askQuery, isOpen, variableSuggestions, filtered.length]);
+  const showDirectOption = canParseDirectly && filtered.length > 0 && !isTypingAsk;
   
   // Reset selection when filtered list changes
   useEffect(() => {
@@ -222,14 +212,45 @@ export function CommandPalette({ isOpen, onClose, onInsert, suggestions = [], av
       setSelectedIndex(i => Math.max(0, i - 1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      // Try to parse the current input as a command
+      
+      // If direct option is selected (index 0 when showDirectOption is true)
+      if (showDirectOption && selectedIndex === 0) {
+        const node = parseCommand(input);
+        if (node) {
+          onInsert(node);
+          onClose();
+        }
+        return;
+      }
+      
+      // Calculate the actual index in the filtered list
+      const listIndex = showDirectOption ? selectedIndex - 1 : selectedIndex;
+      const selectedSuggestion = filtered[listIndex];
+      
+      if (selectedSuggestion) {
+        // For variable suggestions, insert directly
+        if (selectedSuggestion.type === 'variable') {
+          const node = parseCommand(selectedSuggestion.value);
+          if (node) {
+            onInsert(node);
+            onClose();
+          }
+        } else {
+          // For snippets, fill the input and let user continue typing
+          setInput(selectedSuggestion.value);
+          inputRef.current?.focus();
+        }
+        return;
+      }
+      
+      // Fallback: try to parse the current input directly
       const node = parseCommand(input);
       if (node) {
         onInsert(node);
         onClose();
       }
     }
-  }, [input, onInsert, onClose]);
+  }, [input, filtered, selectedIndex, showDirectOption, onInsert, onClose]);
   
   
   if (!isOpen) return null;
@@ -264,8 +285,20 @@ export function CommandPalette({ isOpen, onClose, onInsert, suggestions = [], av
         <div className="max-h-96 overflow-y-auto">
           {filtered.length === 0 && !showDirectOption ? (
             <div className="p-8 text-center text-text-muted text-sm">
-              <p>No matching commands.</p>
-              <p className="mt-2 text-xs">Try: ask, section, progress, gather, if, for, runonce, or snapshot</p>
+              {isTypingAsk ? (
+                <>
+                  <p>No variables found.</p>
+                  <p className="mt-2 text-xs">
+                    Variables are extracted from your interview's question fields.
+                    Type a variable name directly or add fields to your interview.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>No matching commands.</p>
+                  <p className="mt-2 text-xs">Try: ask, section, progress, gather, if, for, runonce, or snapshot</p>
+                </>
+              )}
             </div>
           ) : (
             <div className="p-2">
