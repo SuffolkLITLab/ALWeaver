@@ -111,42 +111,56 @@ function labelForBlock(type: BlockType, data: Record<string, unknown>): string |
   if (type === 'metadata') {
     const meta = (data.metadata ?? {}) as Record<string, unknown>;
     const title = typeof meta.title === 'string' ? meta.title : undefined;
-    return title ? `Metadata • ${title}` : 'Metadata';
+    return title ?? undefined;
   }
 
   if (type === 'question') {
     const question = data.question;
     if (typeof question === 'string') {
       const firstLine = question.trim().split('\n')[0];
-      return `${firstLine}`;
+      return firstLine || undefined;
     }
-    return 'Question';
+    if (typeof question === 'object' && question !== null) {
+      const q = question as Record<string, unknown>;
+      const text = typeof q.question === 'string' ? q.question : undefined;
+      if (text) {
+        return text.trim().split('\n')[0] || undefined;
+      }
+    }
+    return undefined;
   }
 
   if (type === 'code') {
     const code = data.code;
     if (typeof code === 'string' && code.trim()) {
-      return `Code • ${code.trim().split('\n')[0]}`;
+      return code.trim().split('\n')[0] || undefined;
     }
-    return 'Code';
+    if (typeof code === 'object' && code !== null) {
+      const c = code as Record<string, unknown>;
+      const inner = typeof c.code === 'string' ? c.code : undefined;
+      if (inner && inner.trim()) {
+        return inner.trim().split('\n')[0] || undefined;
+      }
+    }
+    return undefined;
   }
 
   if (type === 'attachment') {
     const attachment = (data.attachment ?? {}) as Record<string, unknown>;
     const name = typeof attachment.name === 'string' ? attachment.name : undefined;
-    return name ? `Attachment • ${name}` : 'Attachment';
+    return name ?? undefined;
   }
 
   if (type === 'event') {
     const eventName = data.event;
-    return typeof eventName === 'string' && eventName ? `Event • ${eventName}` : 'Event';
+    return typeof eventName === 'string' && eventName ? eventName : undefined;
   }
 
   if (type === 'objects') {
-    return 'Objects';
+    return undefined;
   }
 
-  return type;
+  return undefined;
 }
 
 function extractOrderItems(block: Record<string, unknown>): string[] {
