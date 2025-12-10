@@ -69,6 +69,7 @@ export interface EditorStoreState {
   summaries: Record<string, BlockSummary>;
   activeView: EditorActiveView;
   documentName: string;
+  originalYaml: string;
 }
 
 export interface EditorStoreActions {

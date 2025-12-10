@@ -2,12 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } fro
 import { Loader2, RefreshCcw, X } from 'lucide-react';
 import { Button } from './Button';
 import { useDocassembleStore } from '@/state/docassembleStore';
-import {
-  downloadPlaygroundFile,
-  fetchDocassembleUser,
-  fetchPlaygroundFiles,
-  fetchPlaygroundProjects,
-} from '@/api/docassemble';
+import { type PlaygroundFolder, downloadPlaygroundFile, fetchDocassembleUser, fetchPlaygroundFiles, fetchPlaygroundProjects } from '@/api/docassemble';
 import { useEditorStore } from '@/state/editorStore';
 
 export interface DocassembleSettingsModalProps {
@@ -32,6 +27,7 @@ export function DocassembleSettingsModal({ open, onClose }: DocassembleSettingsM
   const clearConfig = useDocassembleStore((state) => state.clearConfig);
   const activeProject = useDocassembleStore((state) => state.selectedProject);
   const activeFilename = useDocassembleStore((state) => state.selectedFilename);
+  const selectedFolder = useDocassembleStore((state) => state.selectedFolder);
 
   const initializeFromYaml = useEditorStore((state) => state.initializeFromYaml);
   const setDocumentName = useEditorStore((state) => state.setDocumentName);
@@ -82,8 +78,10 @@ export function DocassembleSettingsModal({ open, onClose }: DocassembleSettingsM
   }, [pendingProject]);
 
   useEffect(() => {
-    pendingFilenameRef.current = pendingFilename;
-  }, [pendingFilename]);
+    if (config && pendingProject && open) {
+      void loadFiles(pendingProject, selectedFolder);
+    }
+  }, [selectedFolder]);
 
   useEffect(() => {
     return () => {
@@ -124,7 +122,7 @@ export function DocassembleSettingsModal({ open, onClose }: DocassembleSettingsM
   }, [config, updateConfig]);
 
   const loadFiles = useCallback(
-    async (projectKey: string, desiredFilename?: string) => {
+    async (projectKey: string, folder: PlaygroundFolder, desiredFilename?: string) => {
       if (!config) {
         return;
       }
@@ -132,7 +130,7 @@ export function DocassembleSettingsModal({ open, onClose }: DocassembleSettingsM
       setIsLoadingFiles(true);
       setFilesError(null);
       try {
-        const list = await fetchPlaygroundFiles(config, projectKey);
+        const list = await fetchPlaygroundFiles(config, projectKey, folder);
         setFiles(list);
         const fallbackFilename = list.find((item) => item === desiredFilename) ?? list[0] ?? '';
         setPendingFilename(fallbackFilename ?? '');
@@ -173,7 +171,7 @@ export function DocassembleSettingsModal({ open, onClose }: DocassembleSettingsM
         const desiredFilename = options?.preserveSelection
           ? pendingFilenameRef.current
           : options?.filenameHint ?? config.filename;
-        await loadFiles(normalizedProject, desiredFilename);
+        await loadFiles(normalizedProject, selectedFolder, desiredFilename);
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'Unable to load Docassemble projects. Check your connection.';
@@ -293,7 +291,7 @@ export function DocassembleSettingsModal({ open, onClose }: DocassembleSettingsM
   const handleProjectChange = (projectKey: string) => {
     const normalized = projectKey || DEFAULT_PROJECT;
     setPendingProject(normalized);
-    void loadFiles(normalized);
+    void loadFiles(normalized, selectedFolder);
   };
 
   const handleLoadInterview = async () => {
@@ -314,7 +312,7 @@ export function DocassembleSettingsModal({ open, onClose }: DocassembleSettingsM
     setLoadError(null);
     setLoadMessage(null);
     try {
-      const yaml = await downloadPlaygroundFile(config, projectKey, pendingFilename);
+      const yaml = await downloadPlaygroundFile(config, projectKey, pendingFilename, selectedFolder);
       initializeFromYaml(yaml, { documentName: pendingFilename });
       setDocumentName(pendingFilename);
       setActiveView('visual');

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type { BlockSummary, BlockType } from '@/api/types';
-import type { EditorStore, EditorBlock, BlockViewMode } from './types';
+import type { EditorStore, EditorBlock, BlockViewMode, OriginalYaml } from './types';
 import { buildYamlDocument, parseBlockFromRaw, parseBlocksFromYaml, serializeBlock } from '@/utils/yaml';
 import { createBlockTemplate } from '@/utils/blockTemplates';
 
@@ -49,11 +49,13 @@ export const useEditorStore = create<EditorStore>()(
     summaries: {},
     activeView: 'visual',
     documentName: DEFAULT_DOCUMENT_NAME,
+    originalYaml: '',
 
     initializeFromYaml: (yaml, options) => {
       const blocks = parseBlocksFromYaml(yaml);
       set((state) => {
         state.yamlDocument = yaml;
+        state.originalYaml = yaml;
         state.blocks = blocks;
         state.blockViewMode = {};
         blocks.forEach((block) => {

@@ -3,6 +3,14 @@ metadata:
   description: An example interview demonstrating various block types.
   version: 1.0
 ---
+#################### Interview order #####################
+id: interview_order_main
+mandatory: True
+code: |
+  planet
+  favorite_number
+  inhabitant_count
+---
 question: Hello, ${ planet }!
 subquestion: |
   I surmise that you have no more than ${ inhabitant_count }

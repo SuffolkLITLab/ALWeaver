@@ -56,3 +56,15 @@ class VariableInfo(BaseModel):
 
 class VariablesResponse(BaseModel):
   variables: list[VariableInfo]
+
+
+class FirstFieldInfo(BaseModel):
+  field: str
+  question_id: str
+  is_list: bool
+  list_name: str | None = None
+  suggestion: str
+
+
+class FirstFieldsResponse(BaseModel):
+  first_fields: list[FirstFieldInfo]

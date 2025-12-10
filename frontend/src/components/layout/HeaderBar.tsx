@@ -17,7 +17,7 @@ import { Badge } from '../common/Badge';
 import { Button } from '../common/Button';
 import { DocassembleSettingsModal } from '../common/DocassembleSettingsModal';
 import { useDocassembleStore } from '@/state/docassembleStore';
-import { uploadPlaygroundFile, fetchDocassembleUser } from '@/api/docassemble';
+import { uploadPlaygroundFile, fetchDocassembleUser, PLAYGROUND_FOLDERS, type PlaygroundFolder, PLAYGROUND_FOLDER_EXTENSIONS } from '@/api/docassemble';
 
 const DEFAULT_DOCASSEMBLE_PROJECT = 'default';
 
@@ -28,15 +28,16 @@ const formatDocassembleProject = (project?: string | null): string => {
   return project;
 };
 
-function ensureYamlFilename(name: string): string {
+const ensureFilename = (name: string, folder: PlaygroundFolder): string => {
   const trimmed = name.trim();
+  const extensions = PLAYGROUND_FOLDER_EXTENSIONS[folder];
   if (!trimmed) {
-    return 'untitled.yml';
+    return `untitled${extensions[0]}`;
   }
 
-  const hasExtension = /\.ya?ml$/i.test(trimmed);
-  return hasExtension ? trimmed : `${trimmed}.yml`;
-}
+  const hasExtension = extensions.some((ext) => trimmed.toLowerCase().endsWith(ext));
+  return hasExtension ? trimmed : `${trimmed}${extensions[0]}`;
+};
 
 export function HeaderBar(): JSX.Element {
   const [isManualValidating, setManualValidating] = useState(false);
@@ -44,7 +45,9 @@ export function HeaderBar(): JSX.Element {
   const docassembleConfig = useDocassembleStore((state) => state.config);
   const selectedDocassembleProject = useDocassembleStore((state) => state.selectedProject);
   const selectedDocassembleFilename = useDocassembleStore((state) => state.selectedFilename);
+  const selectedFolder = useDocassembleStore((state) => state.selectedFolder);
   const updateDocassembleConfig = useDocassembleStore((state) => state.updateConfig);
+  const setSelectedFolder = useDocassembleStore((state) => state.setSelectedFolder);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -200,8 +203,8 @@ export function HeaderBar(): JSX.Element {
     setSaveMessage(undefined);
 
     try {
-      const filename = ensureYamlFilename(documentName);
-      const blob = new Blob([yamlDocument], { type: 'text/yaml;charset=utf-8' });
+      const filename = ensureFilename(documentName, selectedFolder);
+      const blob = new Blob([yamlDocument], { type: 'text/plain;charset=utf-8' });
       const downloadUrl = URL.createObjectURL(blob);
 
       const link = document.createElement('a');
@@ -255,6 +258,7 @@ export function HeaderBar(): JSX.Element {
         selectedDocassembleProject,
         selectedDocassembleFilename,
         yamlDocument,
+        selectedFolder,
       );
       const projectLabel = formatDocassembleProject(selectedDocassembleProject);
       const taskNote = result.taskId ? ` (restart task ${result.taskId})` : '';
@@ -287,7 +291,20 @@ export function HeaderBar(): JSX.Element {
       <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-border bg-surface px-6">
         <div className="flex items-center gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Active Interview</p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Active File</p>
+              <select
+                className="border-none bg-transparent text-xs font-semibold uppercase tracking-[0.18em] text-text-muted outline-none"
+                value={selectedFolder}
+                onChange={(e) => setSelectedFolder(e.target.value as PlaygroundFolder)}
+              >
+                {PLAYGROUND_FOLDERS.map((folder) => (
+                  <option key={folder} value={folder}>
+                    {folder}
+                  </option>
+                ))}
+              </select>
+            </div>
             <p className="text-lg font-semibold text-text-primary">{documentName}</p>
           </div>
           <Badge tone={validationStatus.tone} className="flex items-center gap-1">
@@ -307,7 +324,7 @@ export function HeaderBar(): JSX.Element {
               leftIcon={<FileUp className="h-4 w-4" />}
               onClick={handleUploadClick}
             >
-              Upload YAML
+              Upload File
             </Button>
             <Button
               variant="ghost"
@@ -370,7 +387,7 @@ export function HeaderBar(): JSX.Element {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".yaml,.yml"
+              accept={PLAYGROUND_FOLDER_EXTENSIONS[selectedFolder].join(',')}
               className="hidden"
               onChange={handleFileChange}
             />

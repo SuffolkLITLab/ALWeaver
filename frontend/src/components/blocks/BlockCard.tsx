@@ -6,6 +6,8 @@ import { useEditorStore } from '@/state/editorStore';
 import { LANGUAGE_LABELS, resolveBlockTypeLabel } from '@/utils/constants';
 import { BlockPreview } from './BlockPreview';
 import { BlockCodeEditor } from './BlockCodeEditor';
+import { InterviewOrderEditor } from './InterviewOrderEditor';
+import { isInterviewOrderBlock } from '@/utils/interviewOrderCodegen';
 
 interface BlockCardProps {
   block: EditorBlock;
@@ -20,6 +22,9 @@ export function BlockCard({ block, isSelected }: BlockCardProps): JSX.Element {
   const setSidebarState = useEditorStore((state) => state.setSidebarState);
 
   const languageLabel = LANGUAGE_LABELS[block.language] ?? block.language;
+  
+  // Check if this is an interview order block
+  const isInterviewOrder = block.type === 'code' && isInterviewOrderBlock(block.raw, block.id, block.label);
 
   const handleToggleView = useCallback(() => {
     toggleBlockView(block.id);
@@ -77,7 +82,13 @@ export function BlockCard({ block, isSelected }: BlockCardProps): JSX.Element {
       </header>
 
       <div className="mt-4 rounded-2xl border border-dashed border-border bg-background/60 p-5">
-        {viewMode === 'preview' ? <BlockPreview block={block} /> : <BlockCodeEditor block={block} />}
+        {isInterviewOrder ? (
+          <InterviewOrderEditor block={block} />
+        ) : viewMode === 'preview' ? (
+          <BlockPreview block={block} />
+        ) : (
+          <BlockCodeEditor block={block} />
+        )}
       </div>
 
       <footer className="mt-4 flex items-center justify-between text-xs text-text-muted">

@@ -13,9 +13,12 @@ from .schemas import (
   ValidateResponse,
   ValidationIssue,
   VariablesResponse,
+  VariableInfo,
+  FirstFieldsResponse,
+  FirstFieldInfo,
 )
 from .services.storage import SAVE_ROOT, save_yaml_document
-from .services.yaml_parser import analyze_blocks, validate_document, extract_variables
+from .services.yaml_parser import analyze_blocks, validate_document, extract_variables, extract_first_fields
 
 
 app = FastAPI(
@@ -70,7 +73,17 @@ async def validate_yaml(request: ValidateRequest) -> ValidateResponse:
 @app.post('/variables', response_model=VariablesResponse)
 async def get_variables(request: ParseRequest) -> VariablesResponse:
   variables = extract_variables(request.yaml)
-  return VariablesResponse(variables=variables)
+  return VariablesResponse(variables=[VariableInfo(**v) for v in variables])
+
+
+@app.post('/first-fields', response_model=FirstFieldsResponse)
+async def get_first_fields(request: ParseRequest) -> FirstFieldsResponse:
+  """
+  Extract first fields from question blocks for interview order suggestions.
+  Detects list iterators and suggests .gather() instead.
+  """
+  first_fields = extract_first_fields(request.yaml)
+  return FirstFieldsResponse(first_fields=[FirstFieldInfo(**f) for f in first_fields])
 
 
 @app.post('/save', response_model=SaveResponse)
