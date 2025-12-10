@@ -264,19 +264,19 @@ export function CommandPalette({ isOpen, onClose, onInsert, suggestions = [], av
       />
       
       {/* Palette */}
-      <div className="fixed top-1/4 left-1/2 -translate-x-1/2 w-full max-w-2xl bg-[#1e2a44] border border-primary rounded-xl shadow-2xl z-50">
+      <div className="fixed top-1/4 left-1/2 -translate-x-1/2 w-full max-w-2xl bg-surface border border-border rounded-xl shadow-2xl z-50">
         {/* Search input */}
         <div className="p-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <Search className="h-5 w-5 text-text-muted flex-shrink-0" />
+            <Search className="h-4 w-4 text-text-muted flex-shrink-0" />
             <input
               ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Type a command: ask, section, progress, gather, if, for, runonce, snapshot..."
-              className="flex-1 bg-transparent text-white placeholder-text-muted outline-none text-sm"
+              placeholder="Type a command: ask, section, progress, gather, if, for..."
+              className="flex-1 bg-transparent text-text-primary placeholder-text-muted outline-none text-sm"
             />
           </div>
         </div>
@@ -392,23 +392,23 @@ export function CommandPalette({ isOpen, onClose, onInsert, suggestions = [], av
         </div>
         
         {/* Footer hint */}
-        <div className="p-3 border-t border-border bg-[#121827] rounded-b-xl">
+        <div className="px-3 py-2 border-t border-border bg-muted rounded-b-xl">
           <div className="flex items-center justify-between text-xs text-text-muted flex-wrap gap-2">
-            <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-3 flex-wrap">
               <span className="flex items-center gap-1">
                 <ArrowUp className="h-3 w-3" />
                 <ArrowDown className="h-3 w-3" />
                 Navigate
               </span>
               <span>
-                <kbd className="px-2 py-0.5 rounded bg-muted">Enter</kbd> Insert
+                <kbd className="px-1.5 py-0.5 rounded bg-surface border border-border text-text-muted">Enter</kbd> Insert
               </span>
               <span>
-                <kbd className="px-2 py-0.5 rounded bg-muted">Esc</kbd> Close
+                <kbd className="px-1.5 py-0.5 rounded bg-surface border border-border text-text-muted">Esc</kbd> Close
               </span>
             </div>
             {canParseDirectly && (
-              <span className="text-green-400 text-xs">✓ Command recognized</span>
+              <span className="text-success text-xs">✓ Command recognized</span>
             )}
           </div>
         </div>

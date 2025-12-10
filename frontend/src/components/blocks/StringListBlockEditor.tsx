@@ -217,7 +217,7 @@ export function StringListBlockEditor({ block }: StringListBlockEditorProps): JS
   return (
     <div className="space-y-3">
       {items.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-border bg-background/60 px-3 py-2 text-sm text-text-muted">
+        <p className="rounded-lg border border-dashed border-border bg-background/60 px-3 py-2 text-sm text-text-muted">
           No entries yet. Add one to get started.
         </p>
       ) : (
@@ -225,9 +225,9 @@ export function StringListBlockEditor({ block }: StringListBlockEditorProps): JS
           {items.map((item, index) => (
             <li
               key={`list-item-${index}`}
-              className="flex items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 shadow-sm"
+              className="flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2"
             >
-              <span className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+              <span className="text-xs font-medium text-text-muted">
                 #{index + 1}
               </span>
               <input
@@ -239,26 +239,26 @@ export function StringListBlockEditor({ block }: StringListBlockEditorProps): JS
               />
               <button
                 type="button"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-text-muted transition hover:bg-muted hover:text-text-primary"
+                className="inline-flex h-7 w-7 items-center justify-center rounded text-text-muted transition hover:bg-muted hover:text-text-primary"
                 onClick={() => handleRemove(index)}
                 aria-label={`Remove item ${index + 1}`}
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-3.5 w-3.5" />
               </button>
             </li>
           ))}
         </ul>
       )}
       {isAdding ? (
-        <div className="space-y-3 rounded-xl border border-dashed border-border bg-surface px-3 py-3 shadow-sm">
+        <div className="space-y-3 rounded-lg border border-dashed border-border bg-surface px-3 py-3">
           <div>
-            <label htmlFor={inputId} className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+            <label htmlFor={inputId} className="text-xs font-medium text-text-muted">
               New value
             </label>
             <input
               ref={addInputRef}
               id={inputId}
-              className="mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-text-primary focus:border-primary/40 focus:outline-none focus:ring-0"
+              className="input-field mt-2"
               value={draftValue}
               onChange={(event) => setDraftValue(event.target.value)}
               onKeyDown={(event) => {
@@ -281,7 +281,7 @@ export function StringListBlockEditor({ block }: StringListBlockEditorProps): JS
           {supportsSuggestions && (
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold uppercase tracking-wide text-text-muted">
+                <span className="font-medium text-text-muted">
                   Suggestions
                 </span>
                 {!config && <span className="text-text-muted">Connect to Docassemble</span>}

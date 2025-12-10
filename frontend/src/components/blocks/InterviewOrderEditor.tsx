@@ -313,12 +313,13 @@ export function InterviewOrderEditor({ block }: InterviewOrderEditorProps): JSX.
       ? nodeLints.reduce((highest, l) => l.level === 'error' ? 'error' : highest === 'error' ? 'error' : l.level === 'warn' ? 'warn' : highest, 'info' as 'info' | 'warn' | 'error')
       : null;
 
+    // Use light-mode friendly colors (darker text on light backgrounds)
     const badgeColors: Record<typeof badge, string> = {
-      idempotent: 'bg-green-500/20 text-green-400',
-      flow: 'bg-blue-500/20 text-blue-400',
-      'one-time': 'bg-amber-500/20 text-amber-400',
-      safe: 'bg-gray-500/20 text-gray-400',
-      effectful: 'bg-red-500/20 text-red-400',
+      idempotent: 'bg-green-100 text-green-700 border border-green-200',
+      flow: 'bg-blue-100 text-blue-700 border border-blue-200',
+      'one-time': 'bg-amber-100 text-amber-700 border border-amber-200',
+      safe: 'bg-gray-100 text-gray-600 border border-gray-200',
+      effectful: 'bg-red-100 text-red-700 border border-red-200',
     };
 
     return (
@@ -402,13 +403,13 @@ export function InterviewOrderEditor({ block }: InterviewOrderEditorProps): JSX.
               {hasLints && highestLintLevel && (
                 <span
                   className={clsx(
-                    'rounded-full px-2 py-0.5 text-[0.65rem] font-medium pointer-events-none',
-                    highestLintLevel === 'error' && 'bg-red-500/20 text-red-400',
-                    highestLintLevel === 'warn' && 'bg-amber-500/20 text-amber-400',
-                    highestLintLevel === 'info' && 'bg-blue-500/20 text-blue-400',
+                    'rounded-full px-2 py-0.5 text-xs font-medium pointer-events-none flex items-center gap-1',
+                    highestLintLevel === 'error' && 'bg-red-100 text-red-700',
+                    highestLintLevel === 'warn' && 'bg-amber-100 text-amber-700',
+                    highestLintLevel === 'info' && 'bg-blue-100 text-blue-700',
                   )}
                 >
-                  <AlertCircle className="inline h-3 w-3 mr-1" />
+                  <AlertCircle className="h-3 w-3" />
                   {nodeLints.length}
                 </span>
               )}
@@ -420,7 +421,7 @@ export function InterviewOrderEditor({ block }: InterviewOrderEditorProps): JSX.
           {badge !== 'idempotent' && (
             <span
               className={clsx(
-                'rounded-full px-2 py-0.5 text-[0.65rem] font-medium uppercase tracking-wide pointer-events-auto',
+                'rounded-full px-2 py-0.5 text-xs font-medium pointer-events-auto',
                 badgeColors[badge],
               )}
             >
@@ -680,16 +681,16 @@ export function InterviewOrderEditor({ block }: InterviewOrderEditorProps): JSX.
       {/* Lints panel */}
       {lints.length > 0 && (
         <div className="mt-6 pt-4 border-t border-border">
-          <h4 className="text-sm font-semibold text-text-primary mb-3">Issues & Suggestions</h4>
+          <h4 className="text-sm font-medium text-text-primary mb-3">Issues & Suggestions</h4>
           <div className="space-y-2">
             {lints.map((lint, i) => (
               <div
                 key={i}
                 className={clsx(
-                  'flex items-start gap-2 p-3 rounded-lg text-xs',
-                  lint.level === 'error' && 'bg-red-500/10 text-red-400',
-                  lint.level === 'warn' && 'bg-amber-500/10 text-amber-400',
-                  lint.level === 'info' && 'bg-blue-500/10 text-blue-400',
+                  'flex items-start gap-2 p-3 rounded-lg text-sm',
+                  lint.level === 'error' && 'bg-red-50 text-red-700 border border-red-200',
+                  lint.level === 'warn' && 'bg-amber-50 text-amber-700 border border-amber-200',
+                  lint.level === 'info' && 'bg-blue-50 text-blue-700 border border-blue-200',
                 )}
               >
                 <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />

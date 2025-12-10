@@ -3,8 +3,8 @@ import { render, screen } from '@testing-library/react';
 import App from './App';
 
 describe('App', () => {
-  it('renders header and active file label', () => {
+  it('renders header with file label', () => {
     render(<App />);
-    expect(screen.getByText(/Active File/i)).toBeInTheDocument();
+    expect(screen.getByText(/File:/i)).toBeInTheDocument();
   });
 });

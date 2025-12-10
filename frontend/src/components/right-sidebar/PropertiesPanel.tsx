@@ -62,34 +62,34 @@ export function PropertiesPanel({ block }: PropertiesPanelProps): JSX.Element {
       <section className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Type</p>
+            <p className="text-xs font-medium text-text-muted">Type</p>
             <p className="text-sm font-medium text-text-primary">{resolveBlockTypeLabel(block.type)}</p>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Language</p>
+            <p className="text-xs font-medium text-text-muted">Language</p>
             <p className="text-sm text-text-primary">{LANGUAGE_LABELS[block.language] ?? block.language}</p>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-muted px-3 py-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Block Id</p>
+        <div className="rounded-lg border border-border bg-muted px-3 py-2">
+          <p className="text-xs font-medium text-text-muted">Block ID</p>
           <div className="mt-1 flex items-center justify-between">
-            <span className="font-mono text-sm text-text-primary">{block.id}</span>
+            <span className="font-mono text-sm text-text-primary truncate">{block.id}</span>
             <button
               type="button"
               onClick={handleCopyId}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-surface hover:text-text-primary"
+              className="inline-flex h-7 w-7 items-center justify-center rounded text-text-muted transition-colors hover:bg-surface hover:text-text-primary flex-shrink-0"
               aria-label="Copy block id"
             >
-              {copied ? <ClipboardCheck className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
+              {copied ? <ClipboardCheck className="h-3.5 w-3.5" /> : <Clipboard className="h-3.5 w-3.5" />}
             </button>
           </div>
         </div>
       </section>
 
       <section className="space-y-2">
-        <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Flags</h4>
-        <div className="flex items-center justify-between rounded-xl border border-border bg-muted px-3 py-2">
+        <h4 className="text-xs font-medium text-text-muted">Flags</h4>
+        <div className="flex items-center justify-between rounded-lg border border-border bg-muted px-3 py-2">
           <div>
             <p className="text-sm font-medium text-text-primary">Mandatory block</p>
             <p className="text-xs text-text-muted">Run this block before optional screens.</p>
@@ -101,19 +101,19 @@ export function PropertiesPanel({ block }: PropertiesPanelProps): JSX.Element {
             onClick={() => handleToggleMandatory(!block.metadata.isMandatory)}
             aria-pressed={block.metadata.isMandatory}
           >
-            {block.metadata.isMandatory ? 'Mandatory: On' : 'Mandatory: Off'}
+            {block.metadata.isMandatory ? 'On' : 'Off'}
           </Button>
         </div>
       </section>
 
       {block.metadata.orderItems && block.metadata.orderItems.length > 0 && (
         <section className="space-y-2">
-          <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Order Items</h4>
-          <div className="space-y-2">
+          <h4 className="text-xs font-medium text-text-muted">Order items</h4>
+          <div className="space-y-1.5">
             {block.metadata.orderItems.map((item, index) => (
-              <div key={item} className="flex items-center gap-3 rounded-xl border border-border px-3 py-2">
-                <span className="text-xs font-semibold text-text-muted">{index + 1}</span>
-                <span className="font-mono text-xs text-text-primary">{item}</span>
+              <div key={item} className="flex items-center gap-2 rounded-lg border border-border px-3 py-2">
+                <span className="text-xs font-medium text-text-muted">{index + 1}</span>
+                <span className="font-mono text-xs text-text-primary truncate">{item}</span>
               </div>
             ))}
           </div>
@@ -121,8 +121,8 @@ export function PropertiesPanel({ block }: PropertiesPanelProps): JSX.Element {
       )}
 
       <section className="space-y-2">
-        <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Raw YAML</h4>
-        <pre className="max-h-72 overflow-auto rounded-xl border border-border bg-background px-3 py-2 text-xs">
+        <h4 className="text-xs font-medium text-text-muted">Raw YAML</h4>
+        <pre className="max-h-72 overflow-auto rounded-lg border border-border bg-background px-3 py-2 text-xs">
           {block.raw}
         </pre>
       </section>

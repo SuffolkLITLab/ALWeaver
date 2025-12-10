@@ -28,8 +28,8 @@ function InterviewOrderPreview({ block }: BlockPreviewProps): JSX.Element {
         <p className="text-sm text-text-muted">No goal variables defined.</p>
       ) : (
         items.map((item, index) => (
-          <div key={index} className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-text-muted">{index + 1}</span>
+          <div key={index} className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2">
+            <span className="text-xs font-medium text-text-muted">{index + 1}</span>
             <span className="font-mono text-sm text-text-primary">{item}</span>
           </div>
         ))

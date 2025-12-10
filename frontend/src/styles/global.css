@@ -21,6 +21,26 @@ body {
   color: theme('colors.text-primary');
 }
 
+/* Label styles - use sentence case instead of all-caps for better readability */
+@layer components {
+  .label-text {
+    @apply text-xs font-medium text-text-muted;
+  }
+  
+  .label-heading {
+    @apply text-xs font-semibold text-text-muted;
+  }
+  
+  /* Input field styles for consistent sizing */
+  .input-field {
+    @apply w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder-text-muted outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary/30;
+  }
+  
+  .input-field-sm {
+    @apply w-full rounded-md border border-border bg-surface px-2 py-1.5 text-sm text-text-primary placeholder-text-muted outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary/30;
+  }
+}
+
 .scrollbar-thin {
   scrollbar-width: thin;
 }

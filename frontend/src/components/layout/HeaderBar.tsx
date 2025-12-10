@@ -10,11 +10,15 @@ import {
   Save,
   ServerCog,
   CloudUpload,
+  Code2,
+  Eye,
 } from 'lucide-react';
 import { validateYamlDocument } from '@/api/client';
 import { useEditorStore } from '@/state/editorStore';
 import { Badge } from '../common/Badge';
 import { Button } from '../common/Button';
+import { ToggleButton } from '../common/ToggleButton';
+import { StatusToast } from '../common/StatusToast';
 import { DocassembleSettingsModal } from '../common/DocassembleSettingsModal';
 import { useDocassembleStore } from '@/state/docassembleStore';
 import { uploadPlaygroundFile, fetchDocassembleUser, PLAYGROUND_FOLDERS, type PlaygroundFolder, PLAYGROUND_FOLDER_EXTENSIONS } from '@/api/docassemble';
@@ -168,10 +172,6 @@ export function HeaderBar(): JSX.Element {
     setSidebarState({ isOpen: true, activePanel: 'validation' });
   }, [activeView, setActiveView, setSidebarState]);
 
-  const handleToggleView = useCallback(() => {
-    setActiveView(activeView === 'visual' ? 'yaml' : 'visual');
-  }, [activeView, setActiveView]);
-
   const handleUploadClick = useCallback(() => {
     fileInputRef.current?.click();
   }, []);
@@ -280,21 +280,37 @@ export function HeaderBar(): JSX.Element {
   const StatusIcon = validationStatus.icon;
   const isYamlView = activeView === 'yaml';
   const isSaving = saveStatus === 'saving';
+  
+  // Truncate long docassemble button labels
   const docassembleButtonLabel = docassembleConfig
     ? selectedDocassembleFilename
-      ? `${formatDocassembleProject(selectedDocassembleProject)} / ${selectedDocassembleFilename}`
-      : 'Docassemble Connected'
-    : 'Connect Docassemble';
+      ? `${formatDocassembleProject(selectedDocassembleProject)}/${selectedDocassembleFilename}`
+      : 'Connected'
+    : 'Connect';
+
+  // Combined status for toast
+  const toastMessage = saveMessage || docassembleSaveMessage || '';
+  const toastStatus = (saveStatus === 'error' || docassembleSaveStatus === 'error') 
+    ? 'error' 
+    : (saveStatus === 'success' || docassembleSaveStatus === 'success') 
+      ? 'success' 
+      : 'info';
+  const toastVisible = Boolean(toastMessage);
+
+  const handleDismissToast = useCallback(() => {
+    setSaveMessage(undefined);
+    setDocassembleSaveMessage(undefined);
+  }, []);
 
   return (
     <>
-      <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-border bg-surface px-6">
-        <div className="flex items-center gap-4">
-          <div>
+      <header className="flex h-14 flex-shrink-0 items-center justify-between border-b border-border bg-surface px-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Active File</p>
+              <span className="text-xs text-text-muted">File:</span>
               <select
-                className="border-none bg-transparent text-xs font-semibold uppercase tracking-[0.18em] text-text-muted outline-none"
+                className="border-none bg-transparent text-xs text-text-muted outline-none cursor-pointer hover:text-text-primary"
                 value={selectedFolder}
                 onChange={(e) => setSelectedFolder(e.target.value as PlaygroundFolder)}
               >
@@ -305,107 +321,107 @@ export function HeaderBar(): JSX.Element {
                 ))}
               </select>
             </div>
-            <p className="text-lg font-semibold text-text-primary">{documentName}</p>
+            <p className="text-sm font-medium text-text-primary truncate max-w-[200px]">{documentName}</p>
           </div>
-          <Badge tone={validationStatus.tone} className="flex items-center gap-1">
-            <StatusIcon className={validation.status === 'loading' ? 'animate-spin h-3.5 w-3.5' : 'h-3.5 w-3.5'} />
+          <Badge tone={validationStatus.tone} className="flex items-center gap-1 flex-shrink-0">
+            <StatusIcon className={validation.status === 'loading' ? 'animate-spin h-3 w-3' : 'h-3 w-3'} />
             <span>{validationStatus.label}</span>
           </Badge>
         </div>
 
-        <div className="flex flex-col items-end gap-1">
-          <div className="flex items-center gap-3">
-            <Button variant="secondary" size="sm" onClick={handleToggleView}>
-              {isYamlView ? 'Visual Editor' : 'YAML Editor'}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              leftIcon={<FileUp className="h-4 w-4" />}
-              onClick={handleUploadClick}
-            >
-              Upload File
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              leftIcon={<FileText className="h-4 w-4" />}
-              onClick={handleOpenValidation}
-              disabled={isYamlView}
-            >
-              YAML Preview
-            </Button>
-            <Button
-              variant={docassembleConfig ? 'secondary' : 'ghost'}
-              size="sm"
-              leftIcon={<ServerCog className="h-4 w-4" />}
-              onClick={() => setDocassembleModalOpen(true)}
-            >
-              {docassembleButtonLabel}
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={handleSaveToDocassemble}
-              disabled={!canSaveToDocassemble || docassembleSaveStatus === 'saving'}
-              leftIcon={
-                docassembleSaveStatus === 'saving' ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <CloudUpload className="h-4 w-4" />
-                )
-              }
-            >
-              {docassembleSaveStatus === 'success' ? 'Saved to Docassemble' : 'Save to Docassemble'}
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={handleSaveDocument}
-              disabled={isSaving || !yamlDocument.trim()}
-              leftIcon={
-                isSaving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4" />
-                )
-              }
-            >
-              {saveStatus === 'success' ? 'Saved' : 'Save YAML'}
-            </Button>
-            <Button
-              size="sm"
-              variant="primary"
-              onClick={handleRunValidation}
-              disabled={isBusy || !yamlDocument.trim()}
-              leftIcon={
-                isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />
-              }
-            >
-              Run Validation
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept={PLAYGROUND_FOLDER_EXTENSIONS[selectedFolder].join(',')}
-              className="hidden"
-              onChange={handleFileChange}
-            />
-          </div>
-          {saveMessage && (
-            <p className={`text-xs ${saveStatus === 'error' ? 'text-danger' : 'text-text-muted'}`}>{saveMessage}</p>
-          )}
-          {docassembleSaveMessage && (
-            <p
-              className={`text-xs ${
-                docassembleSaveStatus === 'error' ? 'text-danger' : 'text-text-muted'
-              }`}
-            >
-              {docassembleSaveMessage}
-            </p>
-          )}
+        <div className="flex items-center gap-2">
+          <ToggleButton
+            options={[
+              { value: 'visual', label: 'Visual', icon: <Eye className="h-3.5 w-3.5" /> },
+              { value: 'yaml', label: 'YAML', icon: <Code2 className="h-3.5 w-3.5" /> },
+            ]}
+            value={activeView}
+            onChange={(v) => setActiveView(v as 'visual' | 'yaml')}
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            leftIcon={<FileUp className="h-3.5 w-3.5" />}
+            onClick={handleUploadClick}
+          >
+            Upload
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            leftIcon={<FileText className="h-3.5 w-3.5" />}
+            onClick={handleOpenValidation}
+            disabled={isYamlView}
+          >
+            Preview
+          </Button>
+          <Button
+            variant={docassembleConfig ? 'secondary' : 'ghost'}
+            size="sm"
+            leftIcon={<ServerCog className="h-3.5 w-3.5" />}
+            onClick={() => setDocassembleModalOpen(true)}
+            truncate
+            className="max-w-[160px]"
+          >
+            {docassembleButtonLabel}
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={handleSaveToDocassemble}
+            disabled={!canSaveToDocassemble || docassembleSaveStatus === 'saving'}
+            leftIcon={
+              docassembleSaveStatus === 'saving' ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <CloudUpload className="h-3.5 w-3.5" />
+              )
+            }
+          >
+            {docassembleSaveStatus === 'success' ? 'Uploaded' : 'Upload'}
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={handleSaveDocument}
+            disabled={isSaving || !yamlDocument.trim()}
+            leftIcon={
+              isSaving ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Save className="h-3.5 w-3.5" />
+              )
+            }
+          >
+            {saveStatus === 'success' ? 'Saved' : 'Save'}
+          </Button>
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={handleRunValidation}
+            disabled={isBusy || !yamlDocument.trim()}
+            leftIcon={
+              isBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />
+            }
+          >
+            Validate
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={PLAYGROUND_FOLDER_EXTENSIONS[selectedFolder].join(',')}
+            className="hidden"
+            onChange={handleFileChange}
+          />
         </div>
       </header>
+      <StatusToast
+        message={toastMessage}
+        status={toastStatus}
+        visible={toastVisible}
+        onDismiss={handleDismissToast}
+        autoDismissMs={3200}
+      />
       <DocassembleSettingsModal
         open={isDocassembleModalOpen}
         onClose={() => setDocassembleModalOpen(false)}
