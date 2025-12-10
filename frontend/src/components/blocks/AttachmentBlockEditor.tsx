@@ -746,7 +746,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
       case 'boolean':
         return (
           <div key={field.key} className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor={fieldId}>
+            <label className="text-xs font-medium text-text-muted" htmlFor={fieldId}>
               {field.label}
             </label>
             <select
@@ -765,7 +765,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
       case 'number':
         return (
           <div key={field.key} className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor={fieldId}>
+            <label className="text-xs font-medium text-text-muted" htmlFor={fieldId}>
               {field.label}
             </label>
             <input
@@ -782,7 +782,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
       case 'string':
         return (
           <div key={field.key} className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor={fieldId}>
+            <label className="text-xs font-medium text-text-muted" htmlFor={fieldId}>
               {field.label}
             </label>
             <input
@@ -799,7 +799,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
       case 'text':
         return (
           <div key={field.key} className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor={fieldId}>
+            <label className="text-xs font-medium text-text-muted" htmlFor={fieldId}>
               {field.label}
             </label>
             <textarea
@@ -818,7 +818,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
             key={field.key}
             className={clsx('space-y-2', field.key === 'content' ? 'md:col-span-2' : undefined)}
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
+            <p className="text-xs font-medium text-text-muted">
               {field.label}
             </p>
             <RichTextEditor
@@ -842,7 +842,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
                 : '';
         return (
           <div key={field.key} className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor={fieldId}>
+            <label className="text-xs font-medium text-text-muted" htmlFor={fieldId}>
               {field.label}
             </label>
             <select
@@ -869,7 +869,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
             : '';
         return (
           <div key={field.key} className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor={fieldId}>
+            <label className="text-xs font-medium text-text-muted" htmlFor={fieldId}>
               {field.label}
             </label>
             <textarea
@@ -934,7 +934,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
     <div className="space-y-6">
       <section className="space-y-4">
         <header>
-          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-text-muted">In-use settings</h3>
+          <h3 className="text-sm font-semibold text-text-muted">In-use settings</h3>
           <p className="text-xs text-text-muted">
             These properties are currently defined on this attachment block. Edit them inline and the YAML will update automatically.
           </p>
@@ -947,7 +947,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
           activeByCategory.map(({ category, fields }) => (
             <section key={category} className="space-y-3">
               <header>
-                <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{category}</h4>
+                <h4 className="text-xs font-medium text-text-muted">{category}</h4>
               </header>
               <div className="grid gap-4 md:grid-cols-2">{fields.map((field) => renderFieldControl(field))}</div>
             </section>
@@ -958,7 +958,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
       {showAllOptions ? (
         <section className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-text-muted">Available options</h3>
+            <h3 className="text-sm font-semibold text-text-muted">Available options</h3>
             <button
               type="button"
               className="text-sm font-medium text-primary transition hover:text-primary/80"
@@ -975,7 +975,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
             inactiveByCategory.map(({ category, fields }) => (
               <section key={category} className="space-y-4">
                 <header>
-                  <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{category}</h4>
+                  <h4 className="text-xs font-medium text-text-muted">{category}</h4>
                 </header>
                 <div className="grid gap-4 md:grid-cols-2">{fields.map((field) => renderFieldControl(field))}</div>
               </section>
@@ -996,7 +996,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
         <section className="space-y-4">
           <header className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-text-muted">PDF field mapping</h3>
+              <h3 className="text-sm font-semibold text-text-muted">PDF field mapping</h3>
               <p className="text-xs text-text-muted">
                 Map PDF form field names to expressions. Leave value blank to remove a field.
               </p>
@@ -1020,7 +1020,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
                 <div key={entry.id} className="flex flex-col gap-2 rounded-xl border border-border bg-surface px-3 py-3 shadow-sm md:flex-row md:items-start">
                   <div className="flex-1 space-y-2">
                 <label
-                  className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-text-muted"
+                  className="text-[0.65rem] font-medium text-text-muted"
                   htmlFor={`pdf-field-name-${entry.id}`}
                 >
                   Field name
@@ -1036,7 +1036,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
                   </div>
                   <div className="flex-1 space-y-2">
                 <label
-                  className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-text-muted"
+                  className="text-[0.65rem] font-medium text-text-muted"
                   htmlFor={`pdf-field-value-${entry.id}`}
                 >
                   Value / expression
@@ -1066,7 +1066,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
 
       <section className="space-y-4">
         <header>
-          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-text-muted">Other settings</h3>
+          <h3 className="text-sm font-semibold text-text-muted">Other settings</h3>
           <p className="text-xs text-text-muted">
             These keys use custom YAML values or structures not yet supported visually. Edit them directly or switch to the code view for full control.
           </p>
@@ -1083,7 +1083,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
                 <Fragment key={key}>
                   <div className="space-y-2 rounded-xl border border-border bg-surface px-3 py-3 shadow-sm">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{key}</span>
+                      <span className="text-xs font-medium text-text-muted">{key}</span>
                     </div>
                     <textarea
                       value={control?.text ?? ''}
@@ -1108,7 +1108,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
           {isAddingCustom ? (
             <div className="space-y-3 rounded-xl border border-dashed border-border bg-surface px-3 py-3 shadow-sm">
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor="custom-attachment-key">
+                <label className="text-xs font-medium text-text-muted" htmlFor="custom-attachment-key">
                   Attachment key
                 </label>
                 <input
@@ -1120,7 +1120,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor="custom-attachment-value">
+                <label className="text-xs font-medium text-text-muted" htmlFor="custom-attachment-value">
                   YAML value
                 </label>
                 <textarea

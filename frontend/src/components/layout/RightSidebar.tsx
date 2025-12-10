@@ -81,7 +81,7 @@ export function RightSidebar(): JSX.Element {
           >
             <header className="flex items-center justify-between border-b border-border px-5 py-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Context</p>
+                <p className="text-xs font-medium text-text-muted">Context</p>
                 <h3 className="text-base font-semibold text-text-primary">{panelTitle}</h3>
               </div>
               <button

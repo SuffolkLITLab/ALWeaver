@@ -80,7 +80,7 @@ export function MetadataEditor({ block }: MetadataEditorProps): JSX.Element {
   return (
     <form className="space-y-4">
       <fieldset className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor="metadata-title">
+        <label className="text-xs font-medium text-text-muted" htmlFor="metadata-title">
           Title
         </label>
         <input
@@ -95,7 +95,7 @@ export function MetadataEditor({ block }: MetadataEditorProps): JSX.Element {
       </fieldset>
 
       <fieldset className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor="metadata-language">
+        <label className="text-xs font-medium text-text-muted" htmlFor="metadata-language">
           Language
         </label>
         <input
@@ -110,7 +110,7 @@ export function MetadataEditor({ block }: MetadataEditorProps): JSX.Element {
       </fieldset>
 
       <fieldset className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor="metadata-author">
+        <label className="text-xs font-medium text-text-muted" htmlFor="metadata-author">
           Author
         </label>
         <input
@@ -126,7 +126,7 @@ export function MetadataEditor({ block }: MetadataEditorProps): JSX.Element {
 
       <fieldset className="space-y-2">
         <label
-          className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted"
+          className="text-xs font-medium text-text-muted"
           htmlFor="metadata-description"
         >
           Description

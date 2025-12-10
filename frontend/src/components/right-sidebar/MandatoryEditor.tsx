@@ -110,7 +110,7 @@ export function MandatoryEditor({ block }: MandatoryEditorProps): JSX.Element {
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor="order-code">
+        <label className="text-xs font-medium text-text-muted" htmlFor="order-code">
           Goal variables sequence
         </label>
         <textarea

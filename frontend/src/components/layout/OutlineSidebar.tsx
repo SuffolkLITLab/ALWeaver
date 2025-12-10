@@ -132,7 +132,7 @@ export function OutlineSidebar(): JSX.Element {
                       : 'hover:border-border hover:bg-muted',
                   )}
                 >
-                  <span className="text-xs uppercase tracking-wide text-text-muted">
+                  <span className="text-xs font-medium text-text-muted">
                     {resolveBlockTypeLabel(block.type)}
                   </span>
                   <span className="truncate text-sm font-medium text-text-primary">

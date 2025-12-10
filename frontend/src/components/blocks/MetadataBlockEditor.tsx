@@ -805,7 +805,7 @@ export function MetadataBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
         return (
           <div key={field.key} className="space-y-2">
             <label
-              className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted"
+              className="text-xs font-medium text-text-muted"
               htmlFor={fieldId}
             >
               {field.label}
@@ -827,7 +827,7 @@ export function MetadataBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
         return (
           <div key={field.key} className="space-y-2">
             <label
-              className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted"
+              className="text-xs font-medium text-text-muted"
               htmlFor={fieldId}
             >
               {field.label}
@@ -847,7 +847,7 @@ export function MetadataBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
         return (
           <div key={field.key} className="space-y-2">
             <label
-              className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted"
+              className="text-xs font-medium text-text-muted"
               htmlFor={fieldId}
             >
               {field.label}
@@ -867,7 +867,7 @@ export function MetadataBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
         return (
           <div key={field.key} className="space-y-2">
             <label
-              className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted"
+              className="text-xs font-medium text-text-muted"
               htmlFor={fieldId}
             >
               {field.label}
@@ -894,7 +894,7 @@ export function MetadataBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
         return (
           <div key={field.key} className="space-y-2">
             <label
-              className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted"
+              className="text-xs font-medium text-text-muted"
               htmlFor={fieldId}
             >
               {field.label}
@@ -924,7 +924,7 @@ export function MetadataBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
         return (
           <div key={field.key} className="space-y-2">
             <label
-              className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted"
+              className="text-xs font-medium text-text-muted"
               htmlFor={fieldId}
             >
               {field.label}
@@ -949,7 +949,7 @@ export function MetadataBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
     <div className="space-y-6">
       <section className="space-y-4">
         <header>
-          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-text-muted">In-use metadata</h3>
+          <h3 className="text-sm font-semibold text-text-muted">In-use metadata</h3>
           <p className="text-xs text-text-muted">
             These fields are currently defined in this block. Adjust them here to update the YAML instantly.
           </p>
@@ -963,7 +963,7 @@ export function MetadataBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
           activeByCategory.map(({ category, fields }) => (
             <section key={category} className="space-y-3">
               <header>
-                <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{category}</h4>
+                <h4 className="text-xs font-medium text-text-muted">{category}</h4>
               </header>
               <div className="grid gap-4 md:grid-cols-2">{fields.map((field) => renderFieldControl(field))}</div>
             </section>
@@ -974,7 +974,7 @@ export function MetadataBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
       {showAllOptions ? (
         <section className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-text-muted">Available metadata fields</h3>
+            <h3 className="text-sm font-semibold text-text-muted">Available metadata fields</h3>
             <button
               type="button"
               className="text-sm font-medium text-primary transition hover:text-primary/80"
@@ -991,7 +991,7 @@ export function MetadataBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
             inactiveByCategory.map(({ category, fields }) => (
               <section key={category} className="space-y-4">
                 <header>
-                  <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{category}</h4>
+                  <h4 className="text-xs font-medium text-text-muted">{category}</h4>
                 </header>
                 <div className="grid gap-4 md:grid-cols-2">{fields.map((field) => renderFieldControl(field))}</div>
               </section>
@@ -1010,7 +1010,7 @@ export function MetadataBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
 
       <section className="space-y-4">
         <header>
-          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-text-muted">Other settings</h3>
+          <h3 className="text-sm font-semibold text-text-muted">Other settings</h3>
           <p className="text-xs text-text-muted">
             These entries use custom YAML. Edit them directly or switch to the code view for full control. They will be
             preserved when saving.
@@ -1028,7 +1028,7 @@ export function MetadataBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
                 <Fragment key={key}>
                   <div className="space-y-2 rounded-xl border border-border bg-surface px-3 py-3 shadow-sm">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{key}</span>
+                      <span className="text-xs font-medium text-text-muted">{key}</span>
                     </div>
                     <textarea
                       value={control?.text ?? ''}
@@ -1053,7 +1053,7 @@ export function MetadataBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
           {isAddingCustom ? (
             <div className="space-y-3 rounded-xl border border-dashed border-border bg-surface px-3 py-3 shadow-sm">
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor="custom-metadata-key">
+                <label className="text-xs font-medium text-text-muted" htmlFor="custom-metadata-key">
                   Metadata key
                 </label>
                 <input
@@ -1065,7 +1065,7 @@ export function MetadataBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor="custom-metadata-value">
+                <label className="text-xs font-medium text-text-muted" htmlFor="custom-metadata-value">
                   YAML value
                 </label>
                 <textarea

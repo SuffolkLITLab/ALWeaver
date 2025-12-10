@@ -456,14 +456,14 @@ export function DocassembleSettingsModal({ open, onClose }: DocassembleSettingsM
 
         <div className="space-y-6">
           <section className="space-y-4">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-text-muted">Connection</h3>
+            <h3 className="text-sm font-semibold text-text-muted">Connection</h3>
             {isEditingConnection || !config ? connectionForm : connectionSummarySection}
           </section>
 
           {config && !isEditingConnection && (
             <section className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-text-muted">Playground files</h3>
+                <h3 className="text-sm font-semibold text-text-muted">Playground files</h3>
                 <Button
                   type="button"
                   variant="ghost"
