@@ -748,7 +748,7 @@ export function FeaturesBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
             No optional features are set yet. Use &ldquo;Show all options&rdquo; to enable more.
           </p>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">{activeFields.map(renderFeatureControl)}</div>
+          <div className="space-y-4">{activeFields.map(renderFeatureControl)}</div>
         )}
       </section>
 
@@ -774,7 +774,7 @@ export function FeaturesBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
                 <header>
                   <h4 className="text-xs font-medium text-text-muted">{category}</h4>
                 </header>
-                <div className="grid gap-4 md:grid-cols-2">{fields.map(renderFeatureControl)}</div>
+                <div className="space-y-4">{fields.map(renderFeatureControl)}</div>
               </section>
             ))
           )}

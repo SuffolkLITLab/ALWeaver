@@ -949,7 +949,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
               <header>
                 <h4 className="text-xs font-medium text-text-muted">{category}</h4>
               </header>
-              <div className="grid gap-4 md:grid-cols-2">{fields.map((field) => renderFieldControl(field))}</div>
+              <div className="space-y-4">{fields.map((field) => renderFieldControl(field))}</div>
             </section>
           ))
         )}
@@ -977,7 +977,7 @@ export function AttachmentBlockEditor({ block }: { block: EditorBlock }): JSX.El
                 <header>
                   <h4 className="text-xs font-medium text-text-muted">{category}</h4>
                 </header>
-                <div className="grid gap-4 md:grid-cols-2">{fields.map((field) => renderFieldControl(field))}</div>
+                <div className="space-y-4">{fields.map((field) => renderFieldControl(field))}</div>
               </section>
             ))
           )}

@@ -195,21 +195,21 @@ def _label_for_block(block_type: str, data: dict, raw_chunk: str = '') -> str | 
     
     if block_type == 'metadata':
         meta = data.get('metadata') or {}
-        return f"{meta.get('title')}" if meta.get('title') else 'Metadata'
+        return f"{meta.get('title')}" if meta.get('title') else None
     if block_type == 'question':
         question = data.get('question')
-        return f"{question.splitlines()[0]}" if isinstance(question, str) else 'Question'
+        return f"{question.splitlines()[0]}" if isinstance(question, str) else None
     if block_type == 'code':
         code = data.get('code')
-        return f"{code.splitlines()[0][:24]}" if isinstance(code, str) and code else 'Code'
+        return f"{code.splitlines()[0][:24]}" if isinstance(code, str) and code else None
     if block_type == 'attachment':
         payload = data.get('attachment') or {}
-        return f"{payload.get('name')}" if payload.get('name') else 'Attachment'
+        return f"{payload.get('name')}" if payload.get('name') else None
     if block_type == 'event':
-        return f"{data.get('event')}" if data.get('event') else 'Event'
+        return f"{data.get('event')}" if data.get('event') else None
     if block_type == 'objects':
-        return 'Objects'
-    return block_type
+        return None
+    return None
 
 
 def _order_items_from_code(code: str | None) -> list[str]:
