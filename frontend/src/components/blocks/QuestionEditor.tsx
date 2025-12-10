@@ -643,7 +643,7 @@ function FieldCard({
             <p className="text-xs font-medium text-text-muted">
               Field {index + 1}
             </p>
-            <div className="mt-2 space-y-3">
+            <div className="mt-2 grid gap-3 md:grid-cols-2">
               <div className="space-y-1">
                 <label className="text-xs font-medium text-text-muted" htmlFor={`${field.id}-label`}>
                   Label

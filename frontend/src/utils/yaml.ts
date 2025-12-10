@@ -293,6 +293,7 @@ function parseBlock(raw: string, position: number): EditorBlock {
     orderItems,
     questionPreview: type === 'question' ? parseQuestionPreview(blockRecord) : undefined,
     rawData: blockRecord,
+    yamlId: typeof blockRecord.id === 'string' ? blockRecord.id : undefined,
   };
 
   return {

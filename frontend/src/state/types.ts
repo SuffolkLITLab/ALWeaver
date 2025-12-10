@@ -23,6 +23,7 @@ export interface BlockMetadata {
   orderItems?: string[];
   questionPreview?: QuestionPreview;
   rawData?: Record<string, unknown>;
+  yamlId?: string;
 }
 
 export interface EditorBlock {

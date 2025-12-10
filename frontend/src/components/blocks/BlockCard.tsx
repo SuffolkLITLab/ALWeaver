@@ -57,7 +57,9 @@ export function BlockCard({ block, isSelected }: BlockCardProps): JSX.Element {
           </span>
           <div>
             <p className="text-base font-semibold text-text-primary">{headerTitle}</p>
-            <p className="text-xs text-text-muted">{block.id}</p>
+            {block.metadata.yamlId && (
+              <p className="text-xs text-text-muted">{block.metadata.yamlId}</p>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-1">

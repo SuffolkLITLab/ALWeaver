@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Clipboard, ClipboardCheck } from 'lucide-react';
+import { Clipboard, ClipboardCheck, X } from 'lucide-react';
 import { useState } from 'react';
 import type { EditorBlock } from '@/state/types';
 import { LANGUAGE_LABELS, resolveBlockTypeLabel } from '@/utils/constants';
@@ -14,16 +14,39 @@ interface PropertiesPanelProps {
 export function PropertiesPanel({ block }: PropertiesPanelProps): JSX.Element {
   const upsertBlockFromRaw = useEditorStore((state) => state.upsertBlockFromRaw);
   const [copied, setCopied] = useState(false);
+  const [editingId, setEditingId] = useState(false);
+  const [idValue, setIdValue] = useState(block.metadata.yamlId || '');
 
   const handleCopyId = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(block.id);
+      const idToCopy = block.metadata.yamlId || block.id;
+      await navigator.clipboard.writeText(idToCopy);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
     } catch {
       setCopied(false);
     }
-  }, [block.id]);
+  }, [block.id, block.metadata.yamlId]);
+
+  const handleSaveId = useCallback(
+    (newId: string) => {
+      const base = { ...((block.metadata.rawData ?? {}) as Record<string, unknown>) };
+      if (newId.trim()) {
+        base.id = newId.trim();
+      } else {
+        delete base.id;
+      }
+      const yaml = stringify(base).trim();
+      upsertBlockFromRaw(block.id, yaml);
+      setEditingId(false);
+    },
+    [block.id, block.metadata.rawData, upsertBlockFromRaw],
+  );
+
+  const handleCancelEdit = useCallback(() => {
+    setIdValue(block.metadata.yamlId || '');
+    setEditingId(false);
+  }, [block.metadata.yamlId]);
 
   const handleToggleMandatory = useCallback(
     (next: boolean) => {
@@ -73,16 +96,61 @@ export function PropertiesPanel({ block }: PropertiesPanelProps): JSX.Element {
 
         <div className="rounded-lg border border-border bg-muted px-3 py-2">
           <p className="text-xs font-medium text-text-muted">Block ID</p>
-          <div className="mt-1 flex items-center justify-between">
-            <span className="font-mono text-sm text-text-primary truncate">{block.id}</span>
-            <button
-              type="button"
-              onClick={handleCopyId}
-              className="inline-flex h-7 w-7 items-center justify-center rounded text-text-muted transition-colors hover:bg-surface hover:text-text-primary flex-shrink-0"
-              aria-label="Copy block id"
-            >
-              {copied ? <ClipboardCheck className="h-3.5 w-3.5" /> : <Clipboard className="h-3.5 w-3.5" />}
-            </button>
+          <div className="mt-1 flex items-center justify-between gap-2">
+            {editingId ? (
+              <>
+                <input
+                  type="text"
+                  value={idValue}
+                  onChange={(e) => setIdValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSaveId(idValue);
+                    } else if (e.key === 'Escape') {
+                      handleCancelEdit();
+                    }
+                  }}
+                  onBlur={() => handleSaveId(idValue)}
+                  autoFocus
+                  className="flex-1 font-mono text-sm bg-surface border border-border rounded px-2 py-1 text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="No ID"
+                />
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  className="inline-flex h-7 w-7 items-center justify-center rounded text-text-muted transition-colors hover:bg-surface hover:text-text-primary flex-shrink-0"
+                  aria-label="Cancel editing"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </>
+            ) : (
+              <>
+                {block.metadata.yamlId ? (
+                  <span
+                    onClick={() => setEditingId(true)}
+                    className="flex-1 font-mono text-sm text-text-primary truncate cursor-text hover:bg-surface/50 px-2 py-1 rounded transition-colors"
+                  >
+                    {block.metadata.yamlId}
+                  </span>
+                ) : (
+                  <span
+                    onClick={() => setEditingId(true)}
+                    className="flex-1 font-mono text-sm text-text-muted/60 cursor-text hover:bg-surface/50 px-2 py-1 rounded transition-colors"
+                  >
+                    Click to add ID
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={handleCopyId}
+                  className="inline-flex h-7 w-7 items-center justify-center rounded text-text-muted transition-colors hover:bg-surface hover:text-text-primary flex-shrink-0"
+                  aria-label="Copy block id"
+                >
+                  {copied ? <ClipboardCheck className="h-3.5 w-3.5" /> : <Clipboard className="h-3.5 w-3.5" />}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </section>
