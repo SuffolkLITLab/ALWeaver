@@ -99,7 +99,9 @@ export function PropertiesPanel({ block }: PropertiesPanelProps): JSX.Element {
           <div className="mt-1 flex items-center justify-between gap-2">
             {editingId ? (
               <>
-                <input
+                <div className="flex items-center gap-2 flex-1">
+                  <span className="text-xs text-text-muted">id:&nbsp;</span>
+                  <input
                   type="text"
                   value={idValue}
                   onChange={(e) => setIdValue(e.target.value)}
@@ -114,7 +116,8 @@ export function PropertiesPanel({ block }: PropertiesPanelProps): JSX.Element {
                   autoFocus
                   className="flex-1 font-mono text-sm bg-surface border border-border rounded px-2 py-1 text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="No ID"
-                />
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={handleCancelEdit}
@@ -124,22 +127,28 @@ export function PropertiesPanel({ block }: PropertiesPanelProps): JSX.Element {
                   <X className="h-3.5 w-3.5" />
                 </button>
               </>
-            ) : (
+              ) : (
               <>
                 {block.metadata.yamlId ? (
-                  <span
+                  <div className="flex items-center gap-2 flex-1">
+                    <span className="text-xs text-text-muted">id:&nbsp;</span>
+                    <span
                     onClick={() => setEditingId(true)}
                     className="flex-1 font-mono text-sm text-text-primary truncate cursor-text hover:bg-surface/50 px-2 py-1 rounded transition-colors"
-                  >
-                    {block.metadata.yamlId}
-                  </span>
+                    >
+                      {block.metadata.yamlId}
+                    </span>
+                  </div>
                 ) : (
-                  <span
+                  <div className="flex items-center gap-2 flex-1">
+                    <span className="text-xs text-text-muted">id:&nbsp;</span>
+                    <span
                     onClick={() => setEditingId(true)}
                     className="flex-1 font-mono text-sm text-text-muted/60 cursor-text hover:bg-surface/50 px-2 py-1 rounded transition-colors"
-                  >
-                    Click to add ID
-                  </span>
+                    >
+                      Click to add ID
+                    </span>
+                  </div>
                 )}
                 <button
                   type="button"
@@ -160,7 +169,7 @@ export function PropertiesPanel({ block }: PropertiesPanelProps): JSX.Element {
         <div className="flex items-center justify-between rounded-lg border border-border bg-muted px-3 py-2">
           <div>
             <p className="text-sm font-medium text-text-primary">Mandatory block</p>
-            <p className="text-xs text-text-muted">Run this block before optional screens.</p>
+            <p className="text-xs text-text-muted">Always run this block</p>
           </div>
           <Button
             type="button"

@@ -58,7 +58,10 @@ export function BlockCard({ block, isSelected }: BlockCardProps): JSX.Element {
           <div>
             <p className="text-base font-semibold text-text-primary">{headerTitle}</p>
             {block.metadata.yamlId && (
-              <p className="text-xs text-text-muted">{block.metadata.yamlId}</p>
+              <p className="text-xs text-text-muted">
+                <span className="text-xs text-text-muted">id:&nbsp;</span>
+                <span className="font-mono text-xs text-text-muted">{block.metadata.yamlId}</span>
+              </p>
             )}
           </div>
         </div>
