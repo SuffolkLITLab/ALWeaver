@@ -10,20 +10,18 @@ export function AppShell(): JSX.Element {
   const showVisual = activeView === 'visual';
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-background">
-      {showVisual && <OutlineSidebar />}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <HeaderBar />
-        <div className="flex min-h-0 flex-1 overflow-hidden">
-          {showVisual ? (
-            <>
-              <EditorCanvas />
-              <RightSidebar />
-            </>
-          ) : (
-            <YamlEditorView />
-          )}
-        </div>
+    <div className="flex h-full w-full flex-col overflow-hidden bg-background">
+      <HeaderBar />
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        {showVisual && <OutlineSidebar />}
+        {showVisual ? (
+          <>
+            <EditorCanvas />
+            <RightSidebar />
+          </>
+        ) : (
+          <YamlEditorView />
+        )}
       </div>
     </div>
   );

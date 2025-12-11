@@ -614,7 +614,7 @@ export function FeaturesBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
       case 'boolean': {
         return (
           <div key={field.key} className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor={fieldId}>
+            <label className="text-xs font-medium text-text-muted" htmlFor={fieldId}>
               {field.label}
             </label>
             <select
@@ -634,7 +634,7 @@ export function FeaturesBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
       case 'number': {
         return (
           <div key={field.key} className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor={fieldId}>
+            <label className="text-xs font-medium text-text-muted" htmlFor={fieldId}>
               {field.label}
             </label>
             <input
@@ -652,7 +652,7 @@ export function FeaturesBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
       case 'string': {
         return (
           <div key={field.key} className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor={fieldId}>
+            <label className="text-xs font-medium text-text-muted" htmlFor={fieldId}>
               {field.label}
             </label>
             <input
@@ -678,7 +678,7 @@ export function FeaturesBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
                 : '';
         return (
           <div key={field.key} className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor={fieldId}>
+            <label className="text-xs font-medium text-text-muted" htmlFor={fieldId}>
               {field.label}
             </label>
             <select
@@ -705,7 +705,7 @@ export function FeaturesBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
             : '';
         return (
           <div key={field.key} className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor={fieldId}>
+            <label className="text-xs font-medium text-text-muted" htmlFor={fieldId}>
               {field.label}
             </label>
             <textarea
@@ -738,7 +738,7 @@ export function FeaturesBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
     <div className="space-y-6">
       <section className="space-y-4">
         <header>
-          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-text-muted">In-use settings</h3>
+          <h3 className="text-sm font-semibold text-text-muted">In-use settings</h3>
           <p className="text-xs text-text-muted">
             Values currently defined in this features block. Adjust them here to see the YAML update instantly.
           </p>
@@ -748,14 +748,14 @@ export function FeaturesBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
             No optional features are set yet. Use &ldquo;Show all options&rdquo; to enable more.
           </p>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">{activeFields.map(renderFeatureControl)}</div>
+          <div className="space-y-4">{activeFields.map(renderFeatureControl)}</div>
         )}
       </section>
 
       {showAllOptions ? (
         <section className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-text-muted">Available options</h3>
+            <h3 className="text-sm font-semibold text-text-muted">Available options</h3>
             <button
               type="button"
               className="text-sm font-medium text-primary transition hover:text-primary/80"
@@ -772,9 +772,9 @@ export function FeaturesBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
             inactiveCategories.map(({ category, fields }) => (
               <section key={category} className="space-y-4">
                 <header>
-                  <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{category}</h4>
+                  <h4 className="text-xs font-medium text-text-muted">{category}</h4>
                 </header>
-                <div className="grid gap-4 md:grid-cols-2">{fields.map(renderFeatureControl)}</div>
+                <div className="space-y-4">{fields.map(renderFeatureControl)}</div>
               </section>
             ))
           )}
@@ -791,7 +791,7 @@ export function FeaturesBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
 
       <section className="space-y-4">
         <header>
-          <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-text-muted">Other settings</h3>
+          <h3 className="text-sm font-semibold text-text-muted">Other settings</h3>
           <p className="text-xs text-text-muted">
             These keys are not yet supported by the visual editor. Edit their YAML values directly or switch to the code
             view for full control. They will be preserved when saving.
@@ -809,7 +809,7 @@ export function FeaturesBlockEditor({ block }: { block: EditorBlock }): JSX.Elem
                 <Fragment key={key}>
                   <div className="space-y-2 rounded-xl border border-border bg-surface px-3 py-3 shadow-sm">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">{key}</span>
+                      <span className="text-xs font-medium text-text-muted">{key}</span>
                     </div>
                     <textarea
                       value={control?.text ?? ''}

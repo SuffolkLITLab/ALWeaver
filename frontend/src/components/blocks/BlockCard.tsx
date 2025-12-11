@@ -52,12 +52,17 @@ export function BlockCard({ block, isSelected }: BlockCardProps): JSX.Element {
     >
       <header className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-wide text-text-muted">
+          <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-text-muted">
             {resolveBlockTypeLabel(block.type)}
           </span>
           <div>
             <p className="text-base font-semibold text-text-primary">{headerTitle}</p>
-            <p className="text-xs text-text-muted">{block.id}</p>
+            {block.metadata.yamlId && (
+              <p className="text-xs text-text-muted">
+                <span className="text-xs text-text-muted">id:&nbsp;</span>
+                <span className="font-mono text-xs text-text-muted">{block.metadata.yamlId}</span>
+              </p>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-1">

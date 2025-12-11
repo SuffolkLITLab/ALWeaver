@@ -46,7 +46,7 @@ export function AddBlockTrigger({ insertAfterId, compact }: AddBlockTriggerProps
       </button>
       {isOpen && (
         <div className="absolute top-8 z-30 w-56 rounded-xl border border-border bg-surface p-2 shadow-card">
-          <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Insert block</p>
+          <p className="px-2 pb-2 text-xs font-medium text-text-muted">Insert block</p>
           <div className="space-y-1">
             {BLOCK_TYPE_ORDER.map((type) => (
               <button

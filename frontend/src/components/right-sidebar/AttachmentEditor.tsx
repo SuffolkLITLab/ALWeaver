@@ -92,7 +92,7 @@ export function AttachmentEditor({ block }: AttachmentEditorProps): JSX.Element 
   return (
     <form className="space-y-4">
       <fieldset className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor="attachment-name">
+        <label className="text-xs font-medium text-text-muted" htmlFor="attachment-name">
           Attachment name
         </label>
         <input
@@ -106,7 +106,7 @@ export function AttachmentEditor({ block }: AttachmentEditorProps): JSX.Element 
       </fieldset>
 
       <fieldset className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor="attachment-filename">
+        <label className="text-xs font-medium text-text-muted" htmlFor="attachment-filename">
           Filename
         </label>
         <input
@@ -120,7 +120,7 @@ export function AttachmentEditor({ block }: AttachmentEditorProps): JSX.Element 
       </fieldset>
 
       <fieldset className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor="attachment-formats">
+        <label className="text-xs font-medium text-text-muted" htmlFor="attachment-formats">
           Valid formats
         </label>
         <input
@@ -135,7 +135,7 @@ export function AttachmentEditor({ block }: AttachmentEditorProps): JSX.Element 
       </fieldset>
 
       <fieldset className="space-y-2">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted" htmlFor="attachment-content">
+        <label className="text-xs font-medium text-text-muted" htmlFor="attachment-content">
           Content (Markdown / Mako)
         </label>
         <textarea

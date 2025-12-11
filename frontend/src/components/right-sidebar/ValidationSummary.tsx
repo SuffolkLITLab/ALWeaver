@@ -39,8 +39,8 @@ export function ValidationSummary(): JSX.Element {
 
   return (
     <div className="flex h-full flex-col gap-4">
-      <div className="flex items-start gap-3 rounded-xl border border-border bg-muted px-3 py-3">
-        <div className="mt-1">
+      <div className="flex items-start gap-3 rounded-lg border border-border bg-muted px-3 py-3">
+        <div className="mt-0.5">
           {validation.status === 'loading' ? (
             <Loader2 className="h-4 w-4 animate-spin text-accent" />
           ) : issues.length === 0 && validation.status === 'valid' ? (
@@ -53,7 +53,7 @@ export function ValidationSummary(): JSX.Element {
           <p className="text-sm font-medium text-text-primary">Validation status</p>
           <p className="text-xs text-text-muted">{summaryLabel}</p>
           {validation.lastUpdatedAt && (
-            <p className="mt-1 text-[0.65rem] uppercase tracking-widest text-text-muted">
+            <p className="mt-1 text-xs text-text-muted">
               Updated {new Date(validation.lastUpdatedAt).toLocaleTimeString()}
             </p>
           )}
@@ -62,8 +62,8 @@ export function ValidationSummary(): JSX.Element {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Issues</h4>
-          <span className="rounded-full bg-muted px-2.5 py-1 text-xs text-text-muted">{issues.length}</span>
+          <h4 className="text-xs font-medium text-text-muted">Issues</h4>
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-text-muted">{issues.length}</span>
         </div>
         <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
           {issues.length === 0 ? (
@@ -72,11 +72,11 @@ export function ValidationSummary(): JSX.Element {
             issues.map((issue, index) => {
               const tone = ISSUE_TONE[issue.level] ?? ISSUE_TONE.error;
               return (
-                <div key={`${issue.message}-${index}`} className="rounded-xl border border-border px-3 py-2">
+                <div key={`${issue.message}-${index}`} className="rounded-lg border border-border px-3 py-2">
                   <p className={`text-xs font-semibold ${tone.color}`}>{tone.label}</p>
                   <p className="text-sm text-text-primary">{issue.message}</p>
                   {issue.block_id && (
-                    <p className="text-[0.65rem] uppercase tracking-widest text-text-muted">Block: {issue.block_id}</p>
+                    <p className="text-xs text-text-muted">Block: {issue.block_id}</p>
                   )}
                 </div>
               );
@@ -87,17 +87,17 @@ export function ValidationSummary(): JSX.Element {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">YAML Preview</h4>
+          <h4 className="text-xs font-medium text-text-muted">YAML preview</h4>
           <button
             type="button"
             onClick={handleCopyYaml}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-muted hover:text-text-primary"
+            className="inline-flex h-7 w-7 items-center justify-center rounded text-text-muted transition-colors hover:bg-muted hover:text-text-primary"
             aria-label="Copy YAML"
           >
-            {copied ? <ClipboardCheck className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
+            {copied ? <ClipboardCheck className="h-3.5 w-3.5" /> : <Clipboard className="h-3.5 w-3.5" />}
           </button>
         </div>
-        <pre className="max-h-64 overflow-auto rounded-xl border border-border bg-background px-3 py-2 text-xs">
+        <pre className="max-h-64 overflow-auto rounded-lg border border-border bg-background px-3 py-2 text-xs">
           {yamlDocument}
         </pre>
       </div>

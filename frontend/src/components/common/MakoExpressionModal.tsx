@@ -285,7 +285,7 @@ export function MakoExpressionModal({
               <div className="flex flex-col gap-3">
                 <div>
                   <label
-                    className="block text-xs font-semibold uppercase tracking-wide text-text-muted"
+                    className="block text-xs font-medium text-text-muted"
                     htmlFor="mako-variable-search"
                   >
                     Variables
@@ -328,7 +328,7 @@ export function MakoExpressionModal({
 
               <div className="flex flex-col gap-3">
                 <div>
-                  <p className="block text-xs font-semibold uppercase tracking-wide text-text-muted">
+                  <p className="block text-xs font-medium text-text-muted">
                     Quick tokens
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
@@ -363,7 +363,7 @@ export function MakoExpressionModal({
                   </div>
                 </div>
                 <div>
-                  <p className="block text-xs font-semibold uppercase tracking-wide text-text-muted">
+                  <p className="block text-xs font-medium text-text-muted">
                     Additional snippets
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
@@ -412,7 +412,7 @@ export function MakoExpressionModal({
                 Add a literal value—we will quote strings automatically—or pick another variable.
               </p>
               <div className="mt-3 space-y-2">
-                <label htmlFor="mako-literal-helper" className="block text-xs font-semibold uppercase tracking-wide text-text-muted">
+                <label htmlFor="mako-literal-helper" className="block text-xs font-medium text-text-muted">
                   Literal value
                 </label>
                 <div className="flex items-center gap-2">
@@ -431,7 +431,7 @@ export function MakoExpressionModal({
               </div>
               {equalityHelperVariables.length > 0 && (
                 <div className="mt-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">Variables</p>
+                  <p className="text-xs font-medium text-text-muted">Variables</p>
                   <ul className="mt-2 max-h-32 space-y-1 overflow-y-auto">
                     {equalityHelperVariables.map((variable) => (
                       <li key={variable.name}>

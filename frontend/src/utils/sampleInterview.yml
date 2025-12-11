@@ -32,6 +32,7 @@ buttons:
   - Exit: exit
 mandatory: True
 ---
+id: planet name
 question: |
   What is your planet's name?
 fields:

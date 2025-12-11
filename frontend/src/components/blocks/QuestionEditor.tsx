@@ -476,7 +476,7 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
   return (
     <div className="space-y-5">
       <section className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
+        <p className="text-xs font-medium text-text-muted">
           Question
         </p>
         <RichTextEditor
@@ -489,7 +489,7 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
       </section>
 
       <section className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
+        <p className="text-xs font-medium text-text-muted">
           Subquestion
         </p>
         <RichTextEditor
@@ -509,14 +509,14 @@ export function QuestionEditor({ block }: QuestionEditorProps): JSX.Element {
           onClick={() => handleToggleMandatory(!mandatory)}
           aria-pressed={mandatory}
         >
-          {mandatory ? 'Mandatory: On' : 'Mandatory: Off'}
+          {mandatory ? 'Mandatory' : 'Optional'}
         </Button>
       </div>
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-text-primary">Fields</h3>
-          <Button type="button" variant="secondary" size="sm" onClick={handleAddField} leftIcon={<Plus className="h-4 w-4" />}>
+          <Button type="button" variant="secondary" size="sm" onClick={handleAddField} leftIcon={<Plus className="h-3.5 w-3.5" />}>
             Add field
           </Button>
         </div>
@@ -626,21 +626,21 @@ function FieldCard({
 }: FieldCardProps): JSX.Element {
   const { attributes, listeners, setActivatorNodeRef, isDragging } = dragHandle;
   return (
-    <div className="rounded-2xl border border-border bg-surface px-4 py-4 shadow-soft">
+    <div className="rounded-lg border border-border bg-surface px-4 py-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <button
             type="button"
             ref={(node) => setActivatorNodeRef(node)}
-            className={`mt-6 hidden h-8 w-8 items-center justify-center rounded-full border border-border bg-muted text-text-muted transition-colors hover:bg-primary/10 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary md:flex ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+            className={`mt-5 hidden h-7 w-7 items-center justify-center rounded border border-border bg-muted text-text-muted transition-colors hover:bg-primary/10 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary md:flex ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
             aria-label="Reorder field"
             {...(attributes as Record<string, unknown>)}
             {...((listeners ?? {}) as Record<string, unknown>)}
           >
-            <GripVertical className="h-4 w-4" />
+            <GripVertical className="h-3.5 w-3.5" />
           </button>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
+          <div className="flex-1">
+            <p className="text-xs font-medium text-text-muted">
               Field {index + 1}
             </p>
             <div className="mt-2 grid gap-3 md:grid-cols-2">
@@ -653,7 +653,7 @@ function FieldCard({
                   value={field.label}
                   onChange={(event) => onFieldChange(field.id, { label: event.target.value })}
                   onBlur={onFieldBlur}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-text-primary outline-none focus:border-primary"
+                  className="input-field"
                   placeholder="e.g. Full name"
                 />
               </div>
@@ -666,7 +666,7 @@ function FieldCard({
                   value={field.variable}
                   onChange={(event) => onFieldChange(field.id, { variable: event.target.value })}
                   onBlur={onFieldBlur}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm text-text-primary outline-none focus:border-primary"
+                  className="input-field font-mono"
                   placeholder="users[0].name.full"
                 />
               </div>
@@ -676,7 +676,7 @@ function FieldCard({
         <button
           type="button"
           onClick={() => onRemove(field.id)}
-          className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-muted hover:text-danger"
+          className="inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded text-text-muted transition-colors hover:bg-muted hover:text-danger"
           aria-label="Remove field"
         >
           <Trash2 className="h-4 w-4" />
@@ -754,13 +754,13 @@ function ChoiceEditor({
   onCodeBlur,
 }: ChoiceEditorProps): JSX.Element {
   return (
-    <div className="mt-4 rounded-xl border border-dashed border-border bg-background/60 p-4">
+    <div className="mt-4 rounded-lg border border-dashed border-border bg-background/60 p-4">
       <div className="flex flex-wrap items-center gap-3">
-        <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Options</h4>
+        <h4 className="text-xs font-medium text-text-muted">Options</h4>
         <select
           value={field.optionStrategy === 'none' ? 'text' : field.optionStrategy}
           onChange={(event) => onStrategyChange(field.id, event.target.value as FieldOptionStrategy)}
-          className="h-9 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium uppercase tracking-widest text-text-muted"
+          className="h-8 rounded-md border border-border bg-surface px-3 py-1.5 text-xs font-medium text-text-muted"
         >
           {OPTION_STRATEGY_LABELS.map((option) => (
             <option key={option.value} value={option.value}>
